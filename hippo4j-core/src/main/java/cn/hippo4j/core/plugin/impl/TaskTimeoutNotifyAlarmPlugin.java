@@ -32,7 +32,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 @AllArgsConstructor
 public class TaskTimeoutNotifyAlarmPlugin extends AbstractTaskTimerPlugin {
 
-    public static final String PLUGIN_NAME = "task-timeout-notify-alarm-plugin";
+    public static final String PLUGIN_NAME = TaskTimeoutNotifyAlarmPlugin.class.getSimpleName();
 
     /**
      * threadPoolId
@@ -47,16 +47,6 @@ public class TaskTimeoutNotifyAlarmPlugin extends AbstractTaskTimerPlugin {
      * thread-pool
      */
     private final ThreadPoolExecutor threadPoolExecutor;
-
-    /**
-     * Get id.
-     *
-     * @return id
-     */
-    @Override
-    public String getId() {
-        return PLUGIN_NAME;
-    }
 
     /**
      * Check whether the task execution time exceeds {@link #executeTimeOut},

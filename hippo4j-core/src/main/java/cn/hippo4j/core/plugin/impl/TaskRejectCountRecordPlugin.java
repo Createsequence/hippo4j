@@ -30,17 +30,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class TaskRejectCountRecordPlugin implements RejectedAwarePlugin {
 
-    public static final String PLUGIN_NAME = "task-reject-count-record-plugin";
-
-    /**
-     * Get id.
-     *
-     * @return id
-     */
-    @Override
-    public String getId() {
-        return PLUGIN_NAME;
-    }
+    public static final String PLUGIN_NAME = TaskRejectCountRecordPlugin.class.getSimpleName();
 
     /**
      * rejection count
@@ -56,8 +46,8 @@ public class TaskRejectCountRecordPlugin implements RejectedAwarePlugin {
      */
     @Override
     public PluginRuntime getPluginRuntime() {
-        return new PluginRuntime(getId())
-                .addInfo("rejectCount", getRejectCountNum());
+        return new PluginRuntime(getId(), "拒绝任务数统计插件")
+                .addInfo("rejectCount", "拒绝任务数", getRejectCountNum());
     }
 
     /**

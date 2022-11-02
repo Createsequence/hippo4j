@@ -24,7 +24,8 @@ import cn.hippo4j.core.plugin.manager.ThreadPoolPluginSupport;
 /**
  * <p>A marker superinterface indicating that
  * an instance class is eligible to be sense and intercept
- * some operations of the specific thread-pool instance.
+ * some operations of the specific thread-pool instance. <br />
+ * When the thread-pool is destroyed, the plugin will also be destroyed.
  *
  * <p>Generally, any thread-pool that implements the {@link ThreadPoolPluginSupport}
  * can be register multiple plugins by {@link ThreadPoolPluginSupport#register},
@@ -33,7 +34,7 @@ import cn.hippo4j.core.plugin.manager.ThreadPoolPluginSupport;
  *
  * <p>During runtime, plugins can dynamically modify some configurable parameters
  * and provide some runtime information by {@link #getPluginRuntime()}.
- * When the thread-pool is destroyed, the plugin will also be destroyed.
+ * Override this method to define the internal data that the plugin allows to display.
  *
  * @see ExtensibleThreadPoolExecutor
  * @see ThreadPoolPluginManager
@@ -45,11 +46,13 @@ import cn.hippo4j.core.plugin.manager.ThreadPoolPluginSupport;
 public interface ThreadPoolPlugin {
 
     /**
-     * Get id.
+     * Get id, default return the simple name of class.
      *
      * @return id
      */
-    String getId();
+    default String getId() {
+        return this.getClass().getSimpleName();
+    }
 
     /**
      * Callback when plugin register into manager

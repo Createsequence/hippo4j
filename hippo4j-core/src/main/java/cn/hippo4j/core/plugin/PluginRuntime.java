@@ -36,9 +36,37 @@ public class PluginRuntime {
     private final String pluginId;
 
     /**
+     * plugin name
+     */
+    private final String name;
+
+    /**
+     * Create a {@link PluginRuntime}
+     *
+     * @param pluginId plugin id
+     */
+    public PluginRuntime(String pluginId) {
+        this.pluginId = pluginId;
+        this.name = pluginId;
+    }
+
+    /**
      * runtime info
      */
     private final List<Info> infoList = new ArrayList<>();
+
+    /**
+     * Add a runtime info item.
+     *
+     * @param name name
+     * @param label label
+     * @param value value
+     * @return runtime info item
+     */
+    public PluginRuntime addInfo(String name, String label, Object value) {
+        infoList.add(new Info(name, label, value));
+        return this;
+    }
 
     /**
      * Add a runtime info item.
@@ -48,8 +76,7 @@ public class PluginRuntime {
      * @return runtime info item
      */
     public PluginRuntime addInfo(String name, Object value) {
-        infoList.add(new Info(name, value));
-        return this;
+        return addInfo(name, name, value);
     }
 
     @Getter
@@ -57,6 +84,7 @@ public class PluginRuntime {
     public static class Info {
 
         private final String name;
+        private final String label;
         private final Object value;
     }
 

@@ -41,17 +41,7 @@ import java.util.concurrent.*;
 @AllArgsConstructor
 public class ThreadPoolExecutorShutdownPlugin implements ShutdownAwarePlugin {
 
-    public static final String PLUGIN_NAME = "thread-pool-executor-shutdown-plugin";
-
-    /**
-     * Get id.
-     *
-     * @return id
-     */
-    @Override
-    public String getId() {
-        return PLUGIN_NAME;
-    }
+    public static final String PLUGIN_NAME = ThreadPoolExecutorShutdownPlugin.class.getSimpleName();
 
     /**
      * await termination millis
@@ -101,8 +91,8 @@ public class ThreadPoolExecutorShutdownPlugin implements ShutdownAwarePlugin {
      */
     @Override
     public PluginRuntime getPluginRuntime() {
-        return new PluginRuntime(getId())
-                .addInfo("awaitTerminationMillis", awaitTerminationMillis);
+        return new PluginRuntime(getId(), "线程池关闭插件")
+                .addInfo("awaitTerminationMillis", "线程池关闭等待时间", awaitTerminationMillis);
     }
 
     /**

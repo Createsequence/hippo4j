@@ -32,17 +32,7 @@ import java.util.List;
  */
 public class TaskDecoratorPlugin implements TaskAwarePlugin {
 
-    public static final String PLUGIN_NAME = "task-decorator-plugin";
-
-    /**
-     * Get id.
-     *
-     * @return id
-     */
-    @Override
-    public String getId() {
-        return PLUGIN_NAME;
-    }
+    public static final String PLUGIN_NAME = TaskDecoratorPlugin.class.getSimpleName();
 
     /**
      * decorators
@@ -72,8 +62,11 @@ public class TaskDecoratorPlugin implements TaskAwarePlugin {
      */
     @Override
     public PluginRuntime getPluginRuntime() {
-        return new PluginRuntime(getId())
-                .addInfo("decorators", decorators);
+        PluginRuntime runtime = new PluginRuntime(getId(), getId());
+        decorators.stream()
+            .map(t -> t.getClass().getName())
+            .forEach(t -> runtime.addInfo("decorator", "任务装饰器", t));
+        return runtime;
     }
 
     /**

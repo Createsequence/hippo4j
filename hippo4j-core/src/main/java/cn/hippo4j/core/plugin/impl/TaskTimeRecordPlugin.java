@@ -31,7 +31,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 @RequiredArgsConstructor
 public class TaskTimeRecordPlugin extends AbstractTaskTimerPlugin {
 
-    public static final String PLUGIN_NAME = "task-time-record-plugin";
+    public static final String PLUGIN_NAME = TaskTimeRecordPlugin.class.getSimpleName();
 
     /**
      * Lock instance.
@@ -59,16 +59,6 @@ public class TaskTimeRecordPlugin extends AbstractTaskTimerPlugin {
     private long taskCount = 0L;
 
     /**
-     * Get id.
-     *
-     * @return id
-     */
-    @Override
-    public String getId() {
-        return PLUGIN_NAME;
-    }
-
-    /**
      * Get plugin runtime info.
      *
      * @return plugin runtime info
@@ -76,12 +66,12 @@ public class TaskTimeRecordPlugin extends AbstractTaskTimerPlugin {
     @Override
     public PluginRuntime getPluginRuntime() {
         Summary summary = summarize();
-        return new PluginRuntime(getId())
-                .addInfo("taskCount", summary.getTaskCount())
-                .addInfo("minTaskTime", summary.getMinTaskTimeMillis() + "ms")
-                .addInfo("maxTaskTime", summary.getMaxTaskTimeMillis() + "ms")
-                .addInfo("totalTaskTime", summary.getTotalTaskTimeMillis() + "ms")
-                .addInfo("avgTaskTime", summary.getAvgTaskTimeMillis() + "ms");
+        return new PluginRuntime(getId(), "时间指标统计插件")
+                .addInfo("taskCount", "执行任务数", summary.getTaskCount())
+                .addInfo("minTaskTime", "最小任务执行时间", summary.getMinTaskTimeMillis() + "ms")
+                .addInfo("maxTaskTime", "最大任务执行时间", summary.getMaxTaskTimeMillis() + "ms")
+                .addInfo("totalTaskTime", "总任务执行时间", summary.getTotalTaskTimeMillis() + "ms")
+                .addInfo("avgTaskTime", "平均任务执行时间", summary.getAvgTaskTimeMillis() + "ms");
     }
 
     /**
