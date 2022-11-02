@@ -210,7 +210,7 @@ public class ExtensibleThreadPoolExecutorTest {
             ShutdownAwarePlugin.super.afterShutdown(executor, remainingTasks);
         }
         @Override
-        public void afterTerminated(ExtensibleThreadPoolExecutor executor) {
+        public void afterTerminated(ThreadPoolExecutor executor) {
             invokeCount.incrementAndGet();
             ShutdownAwarePlugin.super.afterTerminated(executor);
         }
