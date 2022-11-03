@@ -30,7 +30,9 @@ public interface ThreadPoolPluginRegistrar {
      *
      * @return id
      */
-    String getId();
+    default String getId() {
+        return this.getClass().getSimpleName();
+    }
 
     /**
      * Create and register plugin for the specified thread-pool instance.

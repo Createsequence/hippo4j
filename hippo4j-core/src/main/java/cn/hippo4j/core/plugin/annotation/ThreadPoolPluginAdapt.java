@@ -9,7 +9,6 @@ import java.lang.annotation.Target;
  * Mark a method as a stateless singleton {@link ThreadPoolPluginAdapt}.
  *
  * @author huang
- * @see AnnotationAwarePluginProcessor
  * @see cn.hippo4j.core.plugin.ThreadPoolPlugin
  */
 @Target({ElementType.ANNOTATION_TYPE, ElementType.METHOD})
