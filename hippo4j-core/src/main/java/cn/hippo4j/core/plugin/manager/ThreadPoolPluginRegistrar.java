@@ -20,13 +20,17 @@ package cn.hippo4j.core.plugin.manager;
 import cn.hippo4j.core.plugin.ThreadPoolPlugin;
 
 /**
- * Registrar of {@link ThreadPoolPlugin}.
+ * <p>Registrar of {@link ThreadPoolPlugin}. <br />
+ * Generally, it is used to register non singleton plugins,
+ * or a group of plugins with specific associations can be configured in a centralized way.
+ *
+ * @see ThreadPoolPlugin
+ * @see ThreadPoolPluginSupport
  */
 public interface ThreadPoolPluginRegistrar {
 
     /**
-     * Get id.
-     * In spring container, the obtained id will be used as the alias of the bean name.
+     * Get id
      *
      * @return id
      */

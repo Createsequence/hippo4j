@@ -4,7 +4,7 @@ import cn.hippo4j.common.toolkit.Assert;
 import cn.hippo4j.common.toolkit.CollectionUtil;
 import cn.hippo4j.core.plugin.ThreadPoolPlugin;
 import cn.hippo4j.core.plugin.annotation.ThreadPoolPluginAdapt;
-import cn.hippo4j.core.plugin.manager.GlobalThreadPoolPluginPublisher;
+import cn.hippo4j.core.plugin.manager.GlobalThreadPoolPluginManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.autoproxy.AutoProxyUtils;
 import org.springframework.beans.BeansException;
@@ -17,14 +17,20 @@ import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <p>An implementation of {@link BeanPostProcessor}.
  * Scan the methods annotated by {@link ThreadPoolPluginAdapt}
  * in the bean after bean initialization, and adapted to the corresponding {@link ThreadPoolPlugin},
- * finally the plugin will publish by {@link GlobalThreadPoolPluginPublisher}.
+ * finally the plugin will publish by {@link GlobalThreadPoolPluginManager}.
  *
  * <p>Before use, ensure that {@link AnnotationAwarePluginFactory} is available in the application context.
  * The processor will try to call {@link AnnotationAwarePluginFactory#support}
@@ -39,7 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @see ThreadPoolPluginAdapt
  * @see AnnotationAwarePluginFactory
- * @see GlobalThreadPoolPluginPublisher
+ * @see GlobalThreadPoolPluginManager
  */
 @Slf4j
 public class AnnotationAwarePluginPostProcessor implements BeanPostProcessor, BeanFactoryAware {
@@ -47,7 +53,7 @@ public class AnnotationAwarePluginPostProcessor implements BeanPostProcessor, Be
     /**
      * global thread pool plugin publisher
      */
-    private GlobalThreadPoolPluginPublisher globalThreadPoolPluginPublisher;
+    private GlobalThreadPoolPluginManager globalThreadPoolPluginManager;
 
     /**
      * application context
@@ -100,7 +106,7 @@ public class AnnotationAwarePluginPostProcessor implements BeanPostProcessor, Be
             .filter(f -> f.support(beanName, beanType, method, annotation))
             .findFirst()
             .map(f -> f.createThreadPoolPlugin(beanName, beanType, method, annotation))
-            .ifPresent(globalThreadPoolPluginPublisher::registerThreadPoolPlugin)
+            .ifPresent(globalThreadPoolPluginManager::registerThreadPoolPlugin)
         );
 
         return bean;
@@ -119,7 +125,7 @@ public class AnnotationAwarePluginPostProcessor implements BeanPostProcessor, Be
             "factory cannot cast to ConfigurableListableBeanFactory"
         );
         this.beanFactory = (ConfigurableListableBeanFactory)beanFactory;
-        this.globalThreadPoolPluginPublisher = beanFactory.getBean(GlobalThreadPoolPluginPublisher.class);
+        this.globalThreadPoolPluginManager = beanFactory.getBean(GlobalThreadPoolPluginManager.class);
     }
 
     private Map<Method, ThreadPoolPluginAdapt> resolvedAnnotatedMethods(Class<?> beanType) {
