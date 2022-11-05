@@ -106,7 +106,7 @@ public class AnnotationAwarePluginPostProcessor implements BeanPostProcessor, Be
             .filter(f -> f.support(beanName, beanType, method, annotation))
             .findFirst()
             .map(f -> f.createThreadPoolPlugin(beanName, beanType, method, annotation))
-            .ifPresent(globalThreadPoolPluginManager::registerThreadPoolPlugin)
+            .ifPresent(globalThreadPoolPluginManager::enableThreadPoolPlugin)
         );
 
         return bean;
