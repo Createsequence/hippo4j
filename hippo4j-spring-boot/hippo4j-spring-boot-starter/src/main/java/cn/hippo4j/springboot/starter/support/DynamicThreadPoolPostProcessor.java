@@ -48,6 +48,7 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -155,7 +156,7 @@ public final class DynamicThreadPoolPostProcessor implements BeanPostProcessor {
                         .rejectedPolicyType(RejectedPolicyTypeEnum.getRejectedPolicyTypeEnumByName(executor.getRejectedExecutionHandler().getClass().getSimpleName()))
                         .build();
                 DynamicThreadPoolRegisterWrapper registerWrapper = DynamicThreadPoolRegisterWrapper.builder()
-                        .dynamicThreadPoolRegisterParameter(parameterInfo)
+                        .parameter(parameterInfo)
                         .build();
                 GlobalThreadPoolManage.dynamicRegister(registerWrapper);
             }
@@ -180,6 +181,10 @@ public final class DynamicThreadPoolPostProcessor implements BeanPostProcessor {
         executor.setKeepAliveTime(threadPoolParameterInfo.getKeepAliveTime(), TimeUnit.SECONDS);
         executor.allowCoreThreadTimeOut(EnableEnum.getBool(threadPoolParameterInfo.getAllowCoreThreadTimeOut()));
         executor.setRejectedExecutionHandler(RejectedPolicyTypeEnum.createPolicy(threadPoolParameterInfo.getRejectedType()));
+        if (executor instanceof DynamicThreadPoolExecutor) {
+            Optional.ofNullable(threadPoolParameterInfo.getExecuteTimeOut())
+                    .ifPresent(executeTimeOut -> ((DynamicThreadPoolExecutor) executor).setExecuteTimeOut(executeTimeOut));
+        }
     }
 
     /**

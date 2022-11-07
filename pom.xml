@@ -22,7 +22,7 @@
         <developer>
             <name>chen.ma</name>
             <email>machen@apache.org</email>
-            <url>https://github.com/magegoofy</url>
+            <url>https://github.com/mageeric</url>
         </developer>
         <developer>
             <name>shining-stars-lk</name>
@@ -38,12 +38,13 @@
         <module>hippo4j-example</module>
         <module>hippo4j-message</module>
         <module>hippo4j-monitor</module>
+        <module>hippo4j-rpc</module>
         <module>hippo4j-server</module>
         <module>hippo4j-spring-boot</module>
     </modules>
 
     <properties>
-        <revision>1.4.3-SNAPSHOT</revision>
+        <revision>1.5.0-SNAPSHOT</revision>
         <!-- Tool -->
         <dozer.version>6.5.0</dozer.version>
         <caffeine.version>2.9.3</caffeine.version>
