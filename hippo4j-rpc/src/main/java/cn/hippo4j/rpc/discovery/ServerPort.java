@@ -15,43 +15,19 @@
  * limitations under the License.
  */
 
-package cn.hippo4j.rpc.response;
-
-import java.io.Serializable;
+package cn.hippo4j.rpc.discovery;
 
 /**
- * Response
+ * Gets the top-level interface of the instance port
  */
-public interface Response extends Serializable {
+@FunctionalInterface
+public interface ServerPort {
 
     /**
-     * The unique identity of the current Response
+     * Gets the listening or exposed port
+     *
+     * @return port
      */
-    String getKey();
-
-    /**
-     * The class of the current Response, The target of deserialization
-     */
-    Class<?> getCls();
-
-    /**
-     * The results of this request can be obtained, The source of deserialization
-     */
-    Object getObj();
-
-    /**
-     * The Throwable of the current Response
-     */
-    Throwable getThrowable();
-
-    /**
-     * the error message
-     */
-    String getErrMsg();
-
-    /**
-     * Whether the current request has an error
-     */
-    boolean isErr();
+    int getPort();
 
 }

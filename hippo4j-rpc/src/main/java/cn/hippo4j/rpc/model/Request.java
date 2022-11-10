@@ -15,23 +15,38 @@
  * limitations under the License.
  */
 
-package cn.hippo4j.rpc.support;
+package cn.hippo4j.rpc.model;
 
-import cn.hippo4j.common.config.ApplicationContextHolder;
+import java.io.Serializable;
 
 /**
- * Adapter Spring, The requested object is managed by spring
+ * request
  */
-public class SpringContextInstance implements Instance {
+public interface Request extends Serializable {
 
-    @Override
-    public Object getInstance(Class<?> cls) {
-        return ApplicationContextHolder.getBean(cls);
-    }
+    /**
+     * The unique identity of the current request
+     */
+    String getKey();
 
-    @Override
-    public Object getInstance(String name) {
-        return ApplicationContextHolder.getInstance().getBean(name);
-    }
+    /**
+     * The Class name of the current request
+     */
+    String getClassName();
+
+    /**
+     * The Method name of the current request
+     */
+    String getMethodName();
+
+    /**
+     * The parameter type of the current request
+     */
+    Class<?>[] getParameterTypes();
+
+    /**
+     * The parameters of the current request
+     */
+    Object[] getParameters();
 
 }

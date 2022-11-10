@@ -15,28 +15,17 @@
  * limitations under the License.
  */
 
-package cn.hippo4j.rpc.support;
+package cn.hippo4j.common.spi.annotation;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Instance interface to get an instance
+ * Annotation of singleton SPI.
  */
-public interface Instance {
-
-    /**
-     * get a instance
-     *
-     * @param cls Class object
-     * @return Information about instances created or found
-     */
-    Object getInstance(Class<?> cls);
-
-    /**
-     * Gets an instance of a class with a recognizable identity,
-     * which can be the fully qualified name of class. It can also be a unique name in a container
-     *
-     * @param name Identifying name
-     * @return Information about instances created or found
-     */
-    Object getInstance(String name);
-
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface SingletonSPI {
 }
