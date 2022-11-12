@@ -18,7 +18,7 @@
 package cn.hippo4j.core.plugin.manager;
 
 import cn.hippo4j.core.plugin.ThreadPoolPlugin;
-import lombok.NonNull;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Collection;
@@ -32,164 +32,114 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DefaultGlobalThreadPoolPluginManager implements GlobalThreadPoolPluginManager {
 
     /**
-     * enable thread pool plugins
+     * Thread pool plugin supports
      */
-    private final Map<String, ThreadPoolPlugin> enableThreadPoolPlugins = new ConcurrentHashMap<>(8);
+    private final Map<String, ThreadPoolPluginSupport> threadPoolPluginSupports = new ConcurrentHashMap<>(32);
 
     /**
-     * enable thread pool plugin registrars
+     * Thread pool plugins
      */
-    private final Map<String, ThreadPoolPluginRegistrar> enableThreadPoolPluginRegistrars = new ConcurrentHashMap<>(8);
+    private final Map<String, ThreadPoolPlugin> threadPoolPlugins = new ConcurrentHashMap<>(32);
 
     /**
-     * registered supports
+     * Thread pool plugin registrars
      */
-    private final Map<String, ThreadPoolPluginSupport> managedThreadPoolPluginSupports = new ConcurrentHashMap<>(32);
+    private final Map<String, ThreadPoolPluginRegistrar> threadPoolPluginRegistrars = new ConcurrentHashMap<>(32);
 
     /**
-     * Synchronize all enabled plugins and registrars in the current manager to the {@link ThreadPoolPluginSupport}
-     * <b>whether the support has been managed by the current manager</b>.
-     * After that, the support will <b>not</b> be synchronized with the plug-in and registrar states in the manager.
-     *
-     * @param support thread pool plugin manager delegate
-     * @see #registerThreadPoolPluginSupport
-     */
-    @Override
-    public void doRegister(@NonNull ThreadPoolPluginSupport support) {
-        enableThreadPoolPluginRegistrars.values().forEach(registrar -> registrar.doRegister(support));
-        enableThreadPoolPlugins.values().forEach(support::tryRegister);
-    }
-
-    /**
-     * Synchronize all enabled plugins and registrars
-     * in the current manager to the {@link ThreadPoolPluginSupport} <b>if the support has not been managed before</b>,
-     * After that, this support will be synchronized with the plug-in and registrar status in the manager.
+     * Register a {@link ThreadPoolPluginSupport}.
      *
      * @param support thread pool plugin manager support
      * @return true if the support has not been managed before, false otherwise
-     * @see #doRegister
      */
     @Override
     public boolean registerThreadPoolPluginSupport(@NonNull ThreadPoolPluginSupport support) {
-        if (!managedThreadPoolPluginSupports.containsKey(support.getThreadPoolId())) {
-            enableThreadPoolPluginRegistrars.values().forEach(registrar -> registrar.doRegister(support));
-            enableThreadPoolPlugins.values().forEach(support::tryRegister);
-            managedThreadPoolPluginSupports.put(support.getThreadPoolId(), support);
-            return true;
-        }
-        return false;
+        return Objects.isNull(threadPoolPluginSupports.putIfAbsent(support.getThreadPoolId(), support));
     }
 
     /**
-     * Cancel the management of the specified {@link ThreadPoolPluginSupport}.
-     *
-     * @param threadPoolId thread pool id
-     * @return {@link ThreadPoolPluginSupport}
-     */
-    @Override
-    public ThreadPoolPluginSupport cancelManagement(String threadPoolId) {
-        return managedThreadPoolPluginSupports.remove(threadPoolId);
-    }
-
-    /**
-     * Get registered {@link ThreadPoolPluginSupport}.
-     *
-     * @param threadPoolId thread-pool id
-     * @return cn.hippo4j.core.plugin.manager.ThreadPoolPluginManager
-     */
-    @Nullable
-    @Override
-    public ThreadPoolPluginSupport getManagedThreadPoolPluginSupport(String threadPoolId) {
-        return managedThreadPoolPluginSupports.get(threadPoolId);
-    }
-
-    /**
-     * Get all registered {@link ThreadPoolPluginSupport}
+     * Get all registered {@link ThreadPoolPluginSupport}.
      *
      * @return all registered {@link ThreadPoolPluginSupport}
      */
     @Override
-    public Collection<ThreadPoolPluginSupport> getAllManagedThreadPoolPluginSupports() {
-        return managedThreadPoolPluginSupports.values();
+    public Collection<ThreadPoolPluginSupport> getAllThreadPoolPluginSupports() {
+        return threadPoolPluginSupports.values();
     }
 
     /**
-     * Enable plugin for all {@link ThreadPoolPluginSupport},
-     * after action, newly registered support will also get this plugin.
+     * Get {@link ThreadPoolPluginSupport}.
+     *
+     * @param threadPoolId thread pool id
+     * @return {@link ThreadPoolPluginSupport} if present, null otherwise
+     */
+    @Override
+    public @Nullable ThreadPoolPluginSupport getThreadPoolPluginSupport(String threadPoolId) {
+        return threadPoolPluginSupports.get(threadPoolId);
+    }
+
+    /**
+     * Register a {@link ThreadPoolPlugin}.
      *
      * @param plugin plugin
      * @return true if the plugin has not been enabled before, false otherwise
      */
     @Override
-    public boolean enableThreadPoolPlugin(@NonNull ThreadPoolPlugin plugin) {
-        if (Objects.isNull(enableThreadPoolPlugins.put(plugin.getId(), plugin))) {
-            managedThreadPoolPluginSupports.values().forEach(support -> support.register(plugin));
-            return true;
-        }
-        return false;
+    public boolean registerThreadPoolPlugin(@NonNull ThreadPoolPlugin plugin) {
+        return Objects.isNull(threadPoolPlugins.putIfAbsent(plugin.getId(), plugin));
     }
 
     /**
-     * Get all enable {@link ThreadPoolPlugin}.
-     *
-     * @return all published {@link ThreadPoolPlugin}
-     */
-    @Override
-    public Collection<ThreadPoolPlugin> getAllEnableThreadPoolPlugins() {
-        return enableThreadPoolPlugins.values();
-    }
-
-    /**
-     * Disable {@link ThreadPoolPlugin} for all {@link ThreadPoolPluginSupport},
-     * after action, newly registered support will not get this registrar.
+     * Get {@link ThreadPoolPlugin}.
      *
      * @param pluginId plugin id
-     * @return {@link ThreadPoolPlugin} if enable, null otherwise
+     * @return {@link ThreadPoolPlugin} if present, null otherwise
      */
     @Override
-    public ThreadPoolPlugin disableThreadPoolPlugin(String pluginId) {
-        ThreadPoolPlugin removed = enableThreadPoolPlugins.remove(pluginId);
-        if (Objects.nonNull(removed)) {
-            managedThreadPoolPluginSupports.values().forEach(support -> support.unregister(pluginId));
-        }
-        return removed;
+    public @Nullable ThreadPoolPlugin getThreadPoolPlugin(String pluginId) {
+        return threadPoolPlugins.get(pluginId);
     }
 
     /**
-     * Enable registrar, then apply to all registered {@link ThreadPoolPluginSupport},
-     * after action, newly registered support will also get this registrar.
+     * Get all registered {@link ThreadPoolPlugin}.
+     *
+     * @return all registered {@link ThreadPoolPlugin}
+     */
+    @Override
+    public Collection<ThreadPoolPlugin> getAllThreadPoolPlugins() {
+        return threadPoolPlugins.values();
+    }
+
+    /**
+     * Register a {@link ThreadPoolPluginRegistrar}.
      *
      * @param registrar registrar
-     * @return true if the registrar has not been enabled before, false otherwise
+     * @return true if the registrar has not been register before, false otherwise
      */
     @Override
-    public boolean enableThreadPoolPluginRegistrar(@NonNull ThreadPoolPluginRegistrar registrar) {
-        if (Objects.isNull(enableThreadPoolPluginRegistrars.put(registrar.getId(), registrar))) {
-            managedThreadPoolPluginSupports.values().forEach(registrar::doRegister);
-            return true;
-        }
-        return false;
+    public boolean registerThreadPoolPluginRegistrar(@NonNull ThreadPoolPluginRegistrar registrar) {
+        return Objects.isNull(threadPoolPluginRegistrars.putIfAbsent(registrar.getId(), registrar));
     }
 
     /**
-     * Get all enable {@link ThreadPoolPluginRegistrar}.
-     *
-     * @return all {@link ThreadPoolPluginRegistrar}.
-     */
-    @Override
-    public Collection<ThreadPoolPluginRegistrar> getAllEnableThreadPoolPluginRegistrar() {
-        return enableThreadPoolPluginRegistrars.values();
-    }
-
-    /**
-     * Unable {@link ThreadPoolPluginRegistrar}, newly registered support will not get this registrar.
+     * Get {@link ThreadPoolPluginRegistrar}.
      *
      * @param registrarId registrar id
-     * @return {@link ThreadPoolPluginRegistrar} if enable, null otherwise
+     * @return {@link ThreadPoolPluginRegistrar} if present, null otherwise
      */
     @Override
-    public ThreadPoolPluginRegistrar disableThreadPoolPluginRegistrar(String registrarId) {
-        return enableThreadPoolPluginRegistrars.remove(registrarId);
+    public @Nullable ThreadPoolPluginRegistrar getThreadPoolPluginRegistrar(String registrarId) {
+        return threadPoolPluginRegistrars.get(registrarId);
+    }
+
+    /**
+     * Get all registered {@link ThreadPoolPluginRegistrar}.
+     *
+     * @return all registered {@link ThreadPoolPluginRegistrar}.
+     */
+    @Override
+    public Collection<ThreadPoolPluginRegistrar> getAllThreadPoolPluginRegistrars() {
+        return threadPoolPluginRegistrars.values();
     }
 
 }

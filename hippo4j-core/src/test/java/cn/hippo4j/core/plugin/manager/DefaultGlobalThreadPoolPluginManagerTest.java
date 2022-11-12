@@ -35,9 +35,9 @@ public class DefaultGlobalThreadPoolPluginManagerTest {
     @Test
     public void testDoRegister() {
         GlobalThreadPoolPluginManager manager = new DefaultGlobalThreadPoolPluginManager();
-        manager.enableThreadPoolPlugin(new TestPlugin("1"));
-        manager.enableThreadPoolPlugin(new TestPlugin("2"));
-        manager.enableThreadPoolPluginRegistrar(new TestRegistrar("1"));
+        manager.registerThreadPoolPlugin(new TestPlugin("1"));
+        manager.registerThreadPoolPlugin(new TestPlugin("2"));
+        manager.registerThreadPoolPluginRegistrar(new TestRegistrar("1"));
 
         TestSupport support = new TestSupport("1");
         manager.doRegister(support);
@@ -47,7 +47,7 @@ public class DefaultGlobalThreadPoolPluginManagerTest {
     @Test
     public void testRegisterThreadPoolPluginSupport() {
         GlobalThreadPoolPluginManager manager = new DefaultGlobalThreadPoolPluginManager();
-        Assert.assertTrue(manager.enableThreadPoolPlugin(new TestPlugin("1")));
+        Assert.assertTrue(manager.registerThreadPoolPlugin(new TestPlugin("1")));
 
         TestSupport support = new TestSupport("1");
         Assert.assertTrue(manager.registerThreadPoolPluginSupport(support));
@@ -55,23 +55,9 @@ public class DefaultGlobalThreadPoolPluginManagerTest {
         Assert.assertEquals(1, support.getAllPlugins().size());
 
         // incremental update
-        manager.enableThreadPoolPlugin(new TestPlugin("2"));
-        manager.enableThreadPoolPluginRegistrar(new TestRegistrar("1"));
+        manager.registerThreadPoolPlugin(new TestPlugin("2"));
+        manager.registerThreadPoolPluginRegistrar(new TestRegistrar("1"));
         Assert.assertEquals(3, support.getAllPlugins().size());
-    }
-
-    @Test
-    public void testCancelManagement() {
-        GlobalThreadPoolPluginManager manager = new DefaultGlobalThreadPoolPluginManager();
-        manager.enableThreadPoolPlugin(new TestPlugin("1"));
-
-        TestSupport support = new TestSupport("1");
-        manager.registerThreadPoolPluginSupport(support);
-        Assert.assertEquals(1, support.getAllPlugins().size());
-
-        manager.cancelManagement(support.getThreadPoolId());
-        manager.enableThreadPoolPlugin(new TestPlugin("2"));
-        Assert.assertEquals(1, support.getAllPlugins().size());
     }
 
     @Test
@@ -80,11 +66,11 @@ public class DefaultGlobalThreadPoolPluginManagerTest {
 
         TestSupport support = new TestSupport("1");
         manager.registerThreadPoolPluginSupport(support);
-        Assert.assertSame(support, manager.getManagedThreadPoolPluginSupport(support.getThreadPoolId()));
+        Assert.assertSame(support, manager.getThreadPoolPluginSupport(support.getThreadPoolId()));
 
         support = new TestSupport("2");
         manager.registerThreadPoolPluginSupport(support);
-        Assert.assertSame(support, manager.getManagedThreadPoolPluginSupport(support.getThreadPoolId()));
+        Assert.assertSame(support, manager.getThreadPoolPluginSupport(support.getThreadPoolId()));
     }
 
     @Test
@@ -92,7 +78,7 @@ public class DefaultGlobalThreadPoolPluginManagerTest {
         GlobalThreadPoolPluginManager manager = new DefaultGlobalThreadPoolPluginManager();
         manager.registerThreadPoolPluginSupport(new TestSupport("1"));
         manager.registerThreadPoolPluginSupport(new TestSupport("2"));
-        Assert.assertEquals(2, manager.getAllManagedThreadPoolPluginSupports().size());
+        Assert.assertEquals(2, manager.getAllThreadPoolPluginSupports().size());
     }
 
     @Test
@@ -103,24 +89,24 @@ public class DefaultGlobalThreadPoolPluginManagerTest {
         TestSupport support2 = new TestSupport("2");
         manager.registerThreadPoolPluginSupport(support2);
 
-        Assert.assertTrue(manager.enableThreadPoolPlugin(new TestPlugin("1")));
-        Assert.assertFalse(manager.enableThreadPoolPlugin(new TestPlugin("1")));
+        Assert.assertTrue(manager.registerThreadPoolPlugin(new TestPlugin("1")));
+        Assert.assertFalse(manager.registerThreadPoolPlugin(new TestPlugin("1")));
         Assert.assertEquals(1, support1.getAllPlugins().size());
     }
 
     @Test
     public void testGetAllEnableThreadPoolPlugins() {
         GlobalThreadPoolPluginManager manager = new DefaultGlobalThreadPoolPluginManager();
-        manager.enableThreadPoolPlugin(new TestPlugin("1"));
-        manager.enableThreadPoolPlugin(new TestPlugin("2"));
-        Assert.assertEquals(2, manager.getAllEnableThreadPoolPlugins().size());
+        manager.registerThreadPoolPlugin(new TestPlugin("1"));
+        manager.registerThreadPoolPlugin(new TestPlugin("2"));
+        Assert.assertEquals(2, manager.getAllThreadPoolPlugins().size());
     }
 
     @Test
     public void testDisableThreadPoolPlugin() {
         GlobalThreadPoolPluginManager manager = new DefaultGlobalThreadPoolPluginManager();
-        manager.enableThreadPoolPlugin(new TestPlugin("1"));
-        manager.enableThreadPoolPlugin(new TestPlugin("2"));
+        manager.registerThreadPoolPlugin(new TestPlugin("1"));
+        manager.registerThreadPoolPlugin(new TestPlugin("2"));
         manager.disableThreadPoolPlugin("2");
         Assert.assertEquals(1, manager.getAllEnableThreadPoolPlugins().size());
     }
@@ -128,24 +114,24 @@ public class DefaultGlobalThreadPoolPluginManagerTest {
     @Test
     public void testEnableThreadPoolPluginRegistrar() {
         GlobalThreadPoolPluginManager manager = new DefaultGlobalThreadPoolPluginManager();
-        Assert.assertTrue(manager.enableThreadPoolPluginRegistrar(new TestRegistrar("1")));
-        Assert.assertFalse(manager.enableThreadPoolPluginRegistrar(new TestRegistrar("1")));
+        Assert.assertTrue(manager.registerThreadPoolPluginRegistrar(new TestRegistrar("1")));
+        Assert.assertFalse(manager.registerThreadPoolPluginRegistrar(new TestRegistrar("1")));
         Assert.assertEquals(1, manager.getAllEnableThreadPoolPluginRegistrar().size());
     }
 
     @Test
     public void testGetAllEnableThreadPoolPluginRegistrar() {
         GlobalThreadPoolPluginManager manager = new DefaultGlobalThreadPoolPluginManager();
-        manager.enableThreadPoolPluginRegistrar(new TestRegistrar("1"));
-        manager.enableThreadPoolPluginRegistrar(new TestRegistrar("2"));
+        manager.registerThreadPoolPluginRegistrar(new TestRegistrar("1"));
+        manager.registerThreadPoolPluginRegistrar(new TestRegistrar("2"));
         Assert.assertEquals(2, manager.getAllEnableThreadPoolPluginRegistrar().size());
     }
 
     @Test
     public void testDisableThreadPoolPluginRegistrar() {
         GlobalThreadPoolPluginManager manager = new DefaultGlobalThreadPoolPluginManager();
-        manager.enableThreadPoolPluginRegistrar(new TestRegistrar("1"));
-        manager.enableThreadPoolPluginRegistrar(new TestRegistrar("2"));
+        manager.registerThreadPoolPluginRegistrar(new TestRegistrar("1"));
+        manager.registerThreadPoolPluginRegistrar(new TestRegistrar("2"));
         manager.disableThreadPoolPluginRegistrar("2");
         Assert.assertEquals(1, manager.getAllEnableThreadPoolPluginRegistrar().size());
     }
@@ -153,8 +139,8 @@ public class DefaultGlobalThreadPoolPluginManagerTest {
     @Test
     public void testGetAllPluginsFromManagers() {
         GlobalThreadPoolPluginManager manager = new DefaultGlobalThreadPoolPluginManager();
-        manager.enableThreadPoolPluginRegistrar(new TestRegistrar("1"));
-        manager.enableThreadPoolPlugin(new TestPlugin("1"));
+        manager.registerThreadPoolPluginRegistrar(new TestRegistrar("1"));
+        manager.registerThreadPoolPlugin(new TestPlugin("1"));
 
         TestSupport support1 = new TestSupport("1");
         manager.registerThreadPoolPluginSupport(support1);
@@ -167,8 +153,8 @@ public class DefaultGlobalThreadPoolPluginManagerTest {
     @Test
     public void testGetPluginsOfTypeFromManagers() {
         GlobalThreadPoolPluginManager manager = new DefaultGlobalThreadPoolPluginManager();
-        manager.enableThreadPoolPluginRegistrar(new TestRegistrar("1"));
-        manager.enableThreadPoolPlugin(new TestPlugin("1"));
+        manager.registerThreadPoolPluginRegistrar(new TestRegistrar("1"));
+        manager.registerThreadPoolPlugin(new TestPlugin("1"));
 
         TestSupport support1 = new TestSupport("1");
         manager.registerThreadPoolPluginSupport(support1);
@@ -181,8 +167,8 @@ public class DefaultGlobalThreadPoolPluginManagerTest {
     @Test
     public void testGetPluginsFromManagers() {
         GlobalThreadPoolPluginManager manager = new DefaultGlobalThreadPoolPluginManager();
-        manager.enableThreadPoolPluginRegistrar(new TestRegistrar("1"));
-        manager.enableThreadPoolPlugin(new TestPlugin("1"));
+        manager.registerThreadPoolPluginRegistrar(new TestRegistrar("1"));
+        manager.registerThreadPoolPlugin(new TestPlugin("1"));
 
         TestSupport support1 = new TestSupport("1");
         manager.registerThreadPoolPluginSupport(support1);
@@ -195,8 +181,8 @@ public class DefaultGlobalThreadPoolPluginManagerTest {
     @Test
     public void testUnregisterForAllManagers() {
         GlobalThreadPoolPluginManager manager = new DefaultGlobalThreadPoolPluginManager();
-        manager.enableThreadPoolPluginRegistrar(new TestRegistrar("1"));
-        manager.enableThreadPoolPlugin(new TestPlugin("1"));
+        manager.registerThreadPoolPluginRegistrar(new TestRegistrar("1"));
+        manager.registerThreadPoolPlugin(new TestPlugin("1"));
 
         TestSupport support1 = new TestSupport("1");
         manager.registerThreadPoolPluginSupport(support1);

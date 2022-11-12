@@ -73,9 +73,9 @@ public class ThreadPoolPluginRegisterPostProcessor extends DefaultGlobalThreadPo
      * @return the bean instance to use, either the original or a wrapped one;
      * if {@code null}, no subsequent BeanPostProcessors will be invoked
      * @throws BeansException in case of errors
-     * @see GlobalThreadPoolPluginManager#enableThreadPoolPlugin
-     * @see GlobalThreadPoolPluginManager#enableThreadPoolPluginRegistrar
-     * @see GlobalThreadPoolPluginManager#registerThreadPoolPluginSupport
+     * @see GlobalThreadPoolPluginManager#registerThreadPoolPluginSupport 
+     * @see GlobalThreadPoolPluginManager#registerThreadPoolPlugin 
+     * @see GlobalThreadPoolPluginManager#registerThreadPoolPluginRegistrar
      */
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
@@ -106,6 +106,7 @@ public class ThreadPoolPluginRegisterPostProcessor extends DefaultGlobalThreadPo
             ThreadPoolPluginSupport support = (ThreadPoolPluginSupport) bean;
             if (registerThreadPoolPluginSupport(support) && log.isDebugEnabled()) {
                 log.debug("Register ThreadPoolPluginSupport [{}]", support.getThreadPoolId());
+                doRegister(support);
             }
         }
     }
@@ -113,7 +114,8 @@ public class ThreadPoolPluginRegisterPostProcessor extends DefaultGlobalThreadPo
     private void registerThreadPoolPluginIfNecessary(Object bean, Class<?> beanType) {
         if (ThreadPoolPlugin.class.isAssignableFrom(beanType)) {
             ThreadPoolPlugin plugin = (ThreadPoolPlugin) bean;
-            if (enableThreadPoolPlugin(plugin) && log.isDebugEnabled()) {
+            if (registerThreadPoolPlugin(plugin) && log.isDebugEnabled()) {
+                useThreadPoolPluginForAll(plugin.getId());
                 log.debug("Register ThreadPoolPlugin [{}]", plugin.getId());
             }
         }
@@ -122,7 +124,8 @@ public class ThreadPoolPluginRegisterPostProcessor extends DefaultGlobalThreadPo
     private void registerThreadPoolPluginRegistrarIfNecessary(Object bean, Class<?> beanType) {
         if (ThreadPoolPluginRegistrar.class.isAssignableFrom(beanType)) {
             ThreadPoolPluginRegistrar registrar = (ThreadPoolPluginRegistrar) bean;
-            if (enableThreadPoolPluginRegistrar(registrar) && log.isDebugEnabled()) {
+            if (registerThreadPoolPluginRegistrar(registrar) && log.isDebugEnabled()) {
+                useThreadPoolPluginRegistrarForAll(registrar.getId());
                 log.debug("Register ThreadPoolPluginRegistrar [{}]", registrar.getId());
             }
         }
