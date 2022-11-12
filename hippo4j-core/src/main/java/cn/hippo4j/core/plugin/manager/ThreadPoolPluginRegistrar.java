@@ -20,7 +20,18 @@ package cn.hippo4j.core.plugin.manager;
 import cn.hippo4j.core.plugin.ThreadPoolPlugin;
 
 /**
- * Registrar of {@link ThreadPoolPlugin}.
+ * <p>Registrar of {@link ThreadPoolPlugin}, usually used as a singleton. <br />
+ * It is used to uniformly register a group of {@link ThreadPoolPlugin}
+ * with associated relationships, or used to register non singleton {@link ThreadPoolPlugin}
+ * with one-to-one relationship with {@link ThreadPoolPluginSupport} instances.
+ *
+ * <p><b>NOTE</b>:
+ * One registrar may be applied to multiple {@link ThreadPoolPluginSupport} at the same time,
+ * and one {@link ThreadPoolPluginSupport} may sometimes be processed by the same registrar <b>multiple times</b>,
+ * Therefore, users should avoid repeatedly registering the same plugin with {@link ThreadPoolPluginSupport}.
+ *
+ * @see ThreadPoolPlugin
+ * @see ThreadPoolPluginSupport
  */
 public interface ThreadPoolPluginRegistrar {
 
@@ -34,9 +45,9 @@ public interface ThreadPoolPluginRegistrar {
     }
 
     /**
-     * Create and register plugin for the specified thread-pool instance.
+     * Register plugin for the specified {@link ThreadPoolPluginSupport} instance.
      *
-     * @param support thread pool plugin manager delegate
+     * @param support {@link ThreadPoolPluginSupport}
      */
     void doRegister(ThreadPoolPluginSupport support);
 }

@@ -17,7 +17,12 @@
 
 package cn.hippo4j.core.plugin.manager;
 
-import cn.hippo4j.core.plugin.*;
+import cn.hippo4j.core.plugin.ExecuteAwarePlugin;
+import cn.hippo4j.core.plugin.PluginRuntime;
+import cn.hippo4j.core.plugin.RejectedAwarePlugin;
+import cn.hippo4j.core.plugin.ShutdownAwarePlugin;
+import cn.hippo4j.core.plugin.TaskAwarePlugin;
+import cn.hippo4j.core.plugin.ThreadPoolPlugin;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -123,6 +128,14 @@ public interface ThreadPoolPluginManager {
      * @return {@link ShutdownAwarePlugin}
      */
     Collection<TaskAwarePlugin> getTaskAwarePluginList();
+
+    /**
+     *
+     *
+     * @param pluginId plugin id
+     * @return boolean
+     */
+    boolean isEnablePlugin(String pluginId);
 
     // ==================== default methods ====================
 

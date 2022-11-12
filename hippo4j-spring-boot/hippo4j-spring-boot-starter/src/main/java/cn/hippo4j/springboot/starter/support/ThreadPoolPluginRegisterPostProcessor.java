@@ -23,6 +23,8 @@ import cn.hippo4j.core.plugin.manager.DefaultGlobalThreadPoolPluginManager;
 import cn.hippo4j.core.plugin.manager.GlobalThreadPoolPluginManager;
 import cn.hippo4j.core.plugin.manager.ThreadPoolPluginRegistrar;
 import cn.hippo4j.core.plugin.manager.ThreadPoolPluginSupport;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.autoproxy.AutoProxyUtils;
 import org.springframework.beans.BeansException;
@@ -59,9 +61,17 @@ import java.util.Objects;
 public class ThreadPoolPluginRegisterPostProcessor extends DefaultGlobalThreadPoolPluginManager implements BeanPostProcessor, ApplicationContextAware {
 
     /**
-     * application context
+     * Application context
      */
     private ConfigurableListableBeanFactory beanFactory;
+
+    /**
+     * Whether to always automatically register plugins with {@link ThreadPoolPluginSupport}
+     * and apply all registrars for {@link ThreadPoolPluginSupport}.
+     */
+    @Setter
+    @Getter
+    private boolean autoEnablePluginAndRegistrar = false;
 
     /**
      * <p>Post process bean, if bean is instance of {@link ThreadPoolPlugin},
@@ -102,29 +112,45 @@ public class ThreadPoolPluginRegisterPostProcessor extends DefaultGlobalThreadPo
     }
 
     private void registerThreadPoolPluginSupportIfNecessary(Object bean, Class<?> beanType) {
-        if (ThreadPoolPluginSupport.class.isAssignableFrom(beanType)) {
-            ThreadPoolPluginSupport support = (ThreadPoolPluginSupport) bean;
-            if (registerThreadPoolPluginSupport(support) && log.isDebugEnabled()) {
+        if (!ThreadPoolPluginSupport.class.isAssignableFrom(beanType)) {
+            return;
+        }
+        ThreadPoolPluginSupport support = (ThreadPoolPluginSupport) bean;
+        if (registerThreadPoolPluginSupport(support)) {
+            if (log.isDebugEnabled()) {
                 log.debug("Register ThreadPoolPluginSupport [{}]", support.getThreadPoolId());
+            }
+            if (isAutoEnablePluginAndRegistrar()) {
+                doRegister(support);
             }
         }
     }
 
     private void registerThreadPoolPluginIfNecessary(Object bean, Class<?> beanType) {
-        if (ThreadPoolPlugin.class.isAssignableFrom(beanType)) {
-            ThreadPoolPlugin plugin = (ThreadPoolPlugin) bean;
-            if (enableThreadPoolPlugin(plugin) && log.isDebugEnabled()) {
-                log.debug("Register ThreadPoolPlugin [{}]", plugin.getId());
-            }
+        if (!ThreadPoolPlugin.class.isAssignableFrom(beanType)) {
+            return;
+        }
+        ThreadPoolPlugin plugin = (ThreadPoolPlugin) bean;
+        registerThreadPoolPlugin(plugin);
+        if (log.isDebugEnabled()) {
+            log.debug("Register ThreadPoolPlugin [{}]", plugin.getId());
+        }
+        if (isAutoEnablePluginAndRegistrar()) {
+            enableThreadPoolPluginForAll(plugin.getId());
         }
     }
 
     private void registerThreadPoolPluginRegistrarIfNecessary(Object bean, Class<?> beanType) {
-        if (ThreadPoolPluginRegistrar.class.isAssignableFrom(beanType)) {
-            ThreadPoolPluginRegistrar registrar = (ThreadPoolPluginRegistrar) bean;
-            if (enableThreadPoolPluginRegistrar(registrar) && log.isDebugEnabled()) {
-                log.debug("Register ThreadPoolPluginRegistrar [{}]", registrar.getId());
-            }
+        if (!ThreadPoolPluginRegistrar.class.isAssignableFrom(beanType)) {
+            return;
+        }
+        ThreadPoolPluginRegistrar registrar = (ThreadPoolPluginRegistrar) bean;
+        registerThreadPoolPluginRegistrar(registrar);
+        if (log.isDebugEnabled()) {
+            log.debug("Register ThreadPoolPluginRegistrar [{}]", registrar.getId());
+        }
+        if (isAutoEnablePluginAndRegistrar()) {
+            enableThreadPoolPluginRegistrarForAll(registrar.getId());
         }
     }
 
