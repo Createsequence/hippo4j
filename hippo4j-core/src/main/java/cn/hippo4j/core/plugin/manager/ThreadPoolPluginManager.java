@@ -169,6 +169,14 @@ public interface ThreadPoolPluginManager {
      */
     Collection<TaskAwarePlugin> getTaskAwarePluginList();
 
+    /**
+     *
+     *
+     * @param pluginId plugin id
+     * @return boolean
+     */
+    boolean isEnablePlugin(String pluginId);
+
     // ==================== default methods ====================
 
     /**
