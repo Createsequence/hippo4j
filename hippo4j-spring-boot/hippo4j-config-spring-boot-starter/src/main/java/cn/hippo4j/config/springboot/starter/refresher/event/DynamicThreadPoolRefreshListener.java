@@ -18,13 +18,17 @@
 package cn.hippo4j.config.springboot.starter.refresher.event;
 
 import cn.hippo4j.common.api.ThreadPoolConfigChange;
+import static cn.hippo4j.common.constant.ChangeThreadPoolConstants.CHANGE_DELIMITER;
+import static cn.hippo4j.common.constant.ChangeThreadPoolConstants.CHANGE_THREAD_POOL_TEXT;
 import cn.hippo4j.common.executor.support.BlockingQueueTypeEnum;
 import cn.hippo4j.common.executor.support.RejectedPolicyTypeEnum;
 import cn.hippo4j.common.executor.support.ResizableCapacityLinkedBlockingQueue;
 import cn.hippo4j.common.toolkit.CollectionUtil;
 import cn.hippo4j.config.springboot.starter.config.BootstrapConfigProperties;
 import cn.hippo4j.config.springboot.starter.config.ExecutorProperties;
+import cn.hippo4j.config.springboot.starter.config.PluginProperties;
 import cn.hippo4j.config.springboot.starter.notify.CoreNotifyConfigBuilder;
+import static cn.hippo4j.config.springboot.starter.refresher.event.Hippo4jConfigDynamicRefreshEventOrder.EXECUTORS_LISTENER;
 import cn.hippo4j.config.springboot.starter.support.GlobalCoreThreadPoolManage;
 import cn.hippo4j.core.executor.DynamicThreadPoolExecutor;
 import cn.hippo4j.core.executor.manage.GlobalThreadPoolManage;
@@ -46,10 +50,6 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static cn.hippo4j.common.constant.ChangeThreadPoolConstants.CHANGE_DELIMITER;
-import static cn.hippo4j.common.constant.ChangeThreadPoolConstants.CHANGE_THREAD_POOL_TEXT;
-import static cn.hippo4j.config.springboot.starter.refresher.event.Hippo4jConfigDynamicRefreshEventOrder.EXECUTORS_LISTENER;
-
 /**
  * Dynamic thread-pool refresh listener.
  */
@@ -63,6 +63,8 @@ public class DynamicThreadPoolRefreshListener extends AbstractRefreshListener<Ex
     private final CoreNotifyConfigBuilder coreNotifyConfigBuilder;
 
     private final Hippo4jBaseSendMessageService hippo4jBaseSendMessageService;
+
+    private final ThreadPoolPluginRefresher threadPoolPluginRefresher;
 
     @Override
     public String getNodes(ExecutorProperties properties) {
@@ -98,6 +100,7 @@ public class DynamicThreadPoolRefreshListener extends AbstractRefreshListener<Ex
                     String.format(CHANGE_DELIMITER, beforeProperties.getExecuteTimeOut(), changeRequest.getNowExecuteTimeOut()),
                     String.format(CHANGE_DELIMITER, beforeProperties.getRejectedHandler(), changeRequest.getNowRejectedName()),
                     String.format(CHANGE_DELIMITER, beforeProperties.getAllowCoreThreadTimeOut(), changeRequest.getNowAllowsCoreThreadTimeOut()));
+
             try {
                 threadPoolConfigChange.sendPoolConfigChange(changeRequest);
             } catch (Throwable ex) {
@@ -279,5 +282,13 @@ public class DynamicThreadPoolRefreshListener extends AbstractRefreshListener<Ex
                 log.warn("The queue length cannot be modified. Queue type mismatch. Current queue type: {}", executor.getQueue().getClass().getSimpleName());
             }
         }
+
     }
+
+    private void dynamicRefreshPlugin(String threadPoolId, PluginProperties properties) {
+        ExecutorProperties beforeProperties = GlobalCoreThreadPoolManage.getProperties(threadPoolId);
+        ThreadPoolExecutor executor = GlobalThreadPoolManage.getExecutorService(threadPoolId).getExecutor();
+
+    }
+
 }

@@ -107,4 +107,10 @@ public class ExecutorProperties {
      * Nodes, application startup is not affect, change properties is effect
      */
     private String nodes;
+
+    /**
+     * Plugin
+     */
+    private PluginProperties plugin;
+
 }
