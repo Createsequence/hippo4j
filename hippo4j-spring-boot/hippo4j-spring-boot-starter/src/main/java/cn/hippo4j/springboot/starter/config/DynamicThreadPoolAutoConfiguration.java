@@ -29,6 +29,7 @@ import cn.hippo4j.core.enable.MarkerConfiguration;
 import cn.hippo4j.core.executor.state.ThreadPoolRunStateHandler;
 import cn.hippo4j.core.executor.support.service.DynamicThreadPoolService;
 import cn.hippo4j.core.handler.DynamicThreadPoolBannerHandler;
+import cn.hippo4j.core.plugin.manager.GlobalThreadPoolPluginManager;
 import cn.hippo4j.core.toolkit.IdentifyUtil;
 import cn.hippo4j.core.toolkit.inet.InetUtils;
 import cn.hippo4j.message.api.NotifyConfigBuilder;
@@ -230,8 +231,13 @@ public class DynamicThreadPoolAutoConfiguration {
     }
 
     @Bean
-    public ThreadPoolPluginRegisterPostProcessor threadPoolPluginRegisterPostProcessor() {
-        return new ThreadPoolPluginRegisterPostProcessor();
+    public GlobalThreadPoolPluginManager globalThreadPoolPluginManager() {
+        return new GlobalThreadPoolPluginManager();
+    }
+
+    @Bean
+    public ThreadPoolPluginRegisterPostProcessor threadPoolPluginRegisterPostProcessor(GlobalThreadPoolPluginManager globalThreadPoolPluginManager) {
+        return new ThreadPoolPluginRegisterPostProcessor(globalThreadPoolPluginManager);
     }
 
 }

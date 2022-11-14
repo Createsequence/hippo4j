@@ -19,10 +19,11 @@ package cn.hippo4j.springboot.starter.support;
 
 import cn.hippo4j.common.toolkit.Assert;
 import cn.hippo4j.core.plugin.ThreadPoolPlugin;
-import cn.hippo4j.core.plugin.manager.DefaultGlobalThreadPoolPluginManager;
 import cn.hippo4j.core.plugin.manager.GlobalThreadPoolPluginManager;
+import cn.hippo4j.core.plugin.manager.GlobalThreadPoolPluginSupportManager;
 import cn.hippo4j.core.plugin.manager.ThreadPoolPluginRegistrar;
 import cn.hippo4j.core.plugin.manager.ThreadPoolPluginSupport;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.autoproxy.AutoProxyUtils;
 import org.springframework.beans.BeansException;
@@ -42,7 +43,7 @@ import org.springframework.context.ResourceLoaderAware;
 import java.util.Objects;
 
 /**
- * <p>The extension implementation of {@link GlobalThreadPoolPluginManager} and {@link BeanPostProcessor},
+ * <p>The extension implementation of {@link GlobalThreadPoolPluginSupportManager} and {@link BeanPostProcessor},
  * used to register {@link ThreadPoolPlugin} for the bean initialization stage of the {@link ThreadPoolPluginSupport}.
  *
  * <p><b>NOTE:</b>
@@ -52,11 +53,17 @@ import java.util.Objects;
  * @see ThreadPoolPluginSupport
  * @see ThreadPoolPluginRegistrar
  * @see ThreadPoolPlugin
+ * @see GlobalThreadPoolPluginSupportManager
  * @see GlobalThreadPoolPluginManager
- * @see DefaultGlobalThreadPoolPluginManager
  */
+@RequiredArgsConstructor
 @Slf4j
-public class ThreadPoolPluginRegisterPostProcessor extends DefaultGlobalThreadPoolPluginManager implements BeanPostProcessor, ApplicationContextAware {
+public class ThreadPoolPluginRegisterPostProcessor implements BeanPostProcessor, ApplicationContextAware {
+
+    /**
+     * global thread pool plugin manager
+     */
+    private final GlobalThreadPoolPluginManager globalThreadPoolPluginManager;
 
     /**
      * application context
@@ -73,9 +80,9 @@ public class ThreadPoolPluginRegisterPostProcessor extends DefaultGlobalThreadPo
      * @return the bean instance to use, either the original or a wrapped one;
      * if {@code null}, no subsequent BeanPostProcessors will be invoked
      * @throws BeansException in case of errors
-     * @see GlobalThreadPoolPluginManager#enableThreadPoolPlugin
-     * @see GlobalThreadPoolPluginManager#enableThreadPoolPluginRegistrar
-     * @see GlobalThreadPoolPluginManager#registerThreadPoolPluginSupport
+     * @see GlobalThreadPoolPluginManager#registerSupport
+     * @see GlobalThreadPoolPluginManager#registerRegistrar
+     * @see GlobalThreadPoolPluginManager#registerSingletonPluginRegistrar
      */
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
@@ -104,7 +111,8 @@ public class ThreadPoolPluginRegisterPostProcessor extends DefaultGlobalThreadPo
     private void registerThreadPoolPluginSupportIfNecessary(Object bean, Class<?> beanType) {
         if (ThreadPoolPluginSupport.class.isAssignableFrom(beanType)) {
             ThreadPoolPluginSupport support = (ThreadPoolPluginSupport) bean;
-            if (registerThreadPoolPluginSupport(support) && log.isDebugEnabled()) {
+            globalThreadPoolPluginManager.registerSupport(support);
+            if (log.isDebugEnabled()) {
                 log.debug("Register ThreadPoolPluginSupport [{}]", support.getThreadPoolId());
             }
         }
@@ -113,8 +121,9 @@ public class ThreadPoolPluginRegisterPostProcessor extends DefaultGlobalThreadPo
     private void registerThreadPoolPluginIfNecessary(Object bean, Class<?> beanType) {
         if (ThreadPoolPlugin.class.isAssignableFrom(beanType)) {
             ThreadPoolPlugin plugin = (ThreadPoolPlugin) bean;
-            if (enableThreadPoolPlugin(plugin) && log.isDebugEnabled()) {
-                log.debug("Register ThreadPoolPlugin [{}]", plugin.getId());
+            globalThreadPoolPluginManager.registerSingletonPluginRegistrar(plugin);
+            if (log.isDebugEnabled()) {
+                log.debug("Register singleton ThreadPoolPlugin [{}]", plugin.getId());
             }
         }
     }
@@ -122,7 +131,8 @@ public class ThreadPoolPluginRegisterPostProcessor extends DefaultGlobalThreadPo
     private void registerThreadPoolPluginRegistrarIfNecessary(Object bean, Class<?> beanType) {
         if (ThreadPoolPluginRegistrar.class.isAssignableFrom(beanType)) {
             ThreadPoolPluginRegistrar registrar = (ThreadPoolPluginRegistrar) bean;
-            if (enableThreadPoolPluginRegistrar(registrar) && log.isDebugEnabled()) {
+            globalThreadPoolPluginManager.registerRegistrar(registrar);
+            if (log.isDebugEnabled()) {
                 log.debug("Register ThreadPoolPluginRegistrar [{}]", registrar.getId());
             }
         }
