@@ -25,7 +25,6 @@ import cn.hippo4j.config.springboot.starter.notify.CoreNotifyConfigBuilder;
 import cn.hippo4j.config.springboot.starter.refresher.event.AdapterExecutorsRefreshListener;
 import cn.hippo4j.config.springboot.starter.refresher.event.DynamicThreadPoolRefreshListener;
 import cn.hippo4j.config.springboot.starter.refresher.event.PlatformsRefreshListener;
-import cn.hippo4j.config.springboot.starter.refresher.event.ThreadPoolPluginRefresher;
 import cn.hippo4j.config.springboot.starter.refresher.event.WebExecutorRefreshListener;
 import cn.hippo4j.config.springboot.starter.support.DynamicThreadPoolAdapterRegister;
 import cn.hippo4j.config.springboot.starter.support.DynamicThreadPoolConfigService;
@@ -105,17 +104,12 @@ public class DynamicThreadPoolAutoConfiguration {
     }
 
     @Bean
-    public ThreadPoolPluginRefresher threadPoolPluginRefresher(GlobalThreadPoolPluginRegistrarManager globalThreadPoolPluginRegistrarManager) {
-        return new ThreadPoolPluginRefresher(globalThreadPoolPluginRegistrarManager);
-    }
-
-    @Bean
     @SuppressWarnings("all")
     public DynamicThreadPoolRefreshListener hippo4jExecutorsListener(ThreadPoolConfigChange threadPoolConfigChange,
                                                                      CoreNotifyConfigBuilder coreNotifyConfigBuilder,
                                                                      Hippo4jBaseSendMessageService hippoBaseSendMessageService,
-                                                                     ThreadPoolPluginRefresher threadPoolPluginRefresher) {
-        return new DynamicThreadPoolRefreshListener(threadPoolConfigChange, coreNotifyConfigBuilder, hippoBaseSendMessageService, threadPoolPluginRefresher);
+                                                                     GlobalThreadPoolPluginRegistrarManager globalThreadPoolPluginRegistrarManager) {
+        return new DynamicThreadPoolRefreshListener(threadPoolConfigChange, coreNotifyConfigBuilder, hippoBaseSendMessageService, globalThreadPoolPluginRegistrarManager);
     }
 
     @Bean

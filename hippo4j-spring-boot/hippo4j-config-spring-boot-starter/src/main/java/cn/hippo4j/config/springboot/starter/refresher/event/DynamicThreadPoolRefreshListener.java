@@ -30,8 +30,11 @@ import cn.hippo4j.config.springboot.starter.config.PluginProperties;
 import cn.hippo4j.config.springboot.starter.notify.CoreNotifyConfigBuilder;
 import static cn.hippo4j.config.springboot.starter.refresher.event.Hippo4jConfigDynamicRefreshEventOrder.EXECUTORS_LISTENER;
 import cn.hippo4j.config.springboot.starter.support.GlobalCoreThreadPoolManage;
+import cn.hippo4j.config.springboot.starter.support.ThreadPoolPluginPropertiesResolver;
 import cn.hippo4j.core.executor.DynamicThreadPoolExecutor;
 import cn.hippo4j.core.executor.manage.GlobalThreadPoolManage;
+import cn.hippo4j.core.plugin.manager.GlobalThreadPoolPluginRegistrarManager;
+import cn.hippo4j.core.plugin.manager.ThreadPoolPluginSupport;
 import cn.hippo4j.message.dto.NotifyConfigDTO;
 import cn.hippo4j.message.request.ChangeParameterNotifyRequest;
 import cn.hippo4j.message.service.GlobalNotifyAlarmManage;
@@ -64,7 +67,7 @@ public class DynamicThreadPoolRefreshListener extends AbstractRefreshListener<Ex
 
     private final Hippo4jBaseSendMessageService hippo4jBaseSendMessageService;
 
-    private final ThreadPoolPluginRefresher threadPoolPluginRefresher;
+    private final GlobalThreadPoolPluginRegistrarManager globalThreadPoolPluginRegistrarManager;
 
     @Override
     public String getNodes(ExecutorProperties properties) {
@@ -89,6 +92,7 @@ public class DynamicThreadPoolRefreshListener extends AbstractRefreshListener<Ex
             }
             dynamicRefreshPool(threadPoolId, properties);
             ExecutorProperties beforeProperties = GlobalCoreThreadPoolManage.getProperties(properties.getThreadPoolId());
+            dynamicRefreshPlugin(threadPoolId, properties);
             GlobalCoreThreadPoolManage.refresh(threadPoolId, failDefaultExecutorProperties(beforeProperties, properties));
             ChangeParameterNotifyRequest changeRequest = buildChangeRequest(beforeProperties, properties);
             log.info(CHANGE_THREAD_POOL_TEXT,
@@ -285,10 +289,47 @@ public class DynamicThreadPoolRefreshListener extends AbstractRefreshListener<Ex
 
     }
 
-    private void dynamicRefreshPlugin(String threadPoolId, PluginProperties properties) {
+    /**
+     * <p>Refresh the plugin config for specified {@link ThreadPoolPluginSupport}. <br />
+     * By default, only when {@code beforeResolvedProperties} and {@code afterResolvedProperties}
+     * have any different attribute values,
+     * <b>all registered plugins are always unregistered first</b>,
+     * and then re-registered plugin to {@link ThreadPoolPluginSupport} through the registrar.
+     */
+    private void dynamicRefreshPlugin(String threadPoolId, ExecutorProperties afterProperties) {
         ExecutorProperties beforeProperties = GlobalCoreThreadPoolManage.getProperties(threadPoolId);
-        ThreadPoolExecutor executor = GlobalThreadPoolManage.getExecutorService(threadPoolId).getExecutor();
+        PluginProperties beforePluginProperties = beforeProperties.getPlugin();
+        PluginProperties afterPluginProperties = afterProperties.getPlugin();
 
+        // nothing changed
+        if (ThreadPoolPluginPropertiesResolver.isNothingChanged(beforePluginProperties, afterPluginProperties)) {
+            if (log.isDebugEnabled()) {
+                log.debug("The plugin configuration of the thread-pool [{}] does not need to be changed.", threadPoolId);
+            }
+            return;
+        }
+
+        // resolve changed properties
+        PluginProperties resolvedPluginProperties = ThreadPoolPluginPropertiesResolver.resolve(
+            beforePluginProperties, afterPluginProperties
+        );
+        if (Objects.isNull(resolvedPluginProperties)) {
+            return;
+        }
+
+        // refresh properties if necessary
+        ThreadPoolExecutor executor = GlobalThreadPoolManage.getExecutorService(threadPoolId).getExecutor();
+        if (executor instanceof ThreadPoolPluginSupport) {
+            ThreadPoolPluginSupport support = (ThreadPoolPluginSupport)executor;
+            if (log.isInfoEnabled()) {
+                log.info("Clear all registered plugins of thread-pool [{}], and use registrar for thread pool once again", support.getThreadPoolId());
+            }
+            support.clear();
+            ThreadPoolPluginPropertiesResolver.resolveEnableRegistrars(resolvedPluginProperties, globalThreadPoolPluginRegistrarManager)
+                .forEach(registrar -> registrar.doRegister(support));
+        }
+        // update plugin config of after properties
+        afterProperties.setPlugin(resolvedPluginProperties);
     }
 
 }
