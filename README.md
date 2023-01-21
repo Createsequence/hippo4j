@@ -1,10 +1,13 @@
-<img align="center" width="260" alt="image" src="https://user-images.githubusercontent.com/77398366/181906454-b46f6a14-7c2c-4b8f-8b0a-40432521bed8.png">
 
-中文 | [English](https://github.com/opengoofy/hippo4j/blob/develop/README-EN.md)
+# 动态可观测线程池
 
-# 动态可观测线程池框架，提高线上运行保障能力
+<img align="right" width="320" alt="image" src="https://user-images.githubusercontent.com/77398366/181906454-b46f6a14-7c2c-4b8f-8b0a-40432521bed8.png">
 
-[![Gitee](https://gitee.com/magegoofy/hippo4j/badge/star.svg?theme=gvp)](https://gitee.com/magegoofy/hippo4j) [![GitHub](https://img.shields.io/github/stars/opengoofy/hippo4j?color=5470c6)](https://github.com/opengoofy/hippo4j) [![Contributors](https://img.shields.io/github/contributors/opengoofy/hippo4j?color=3ba272)](https://github.com/opengoofy/hippo4j/graphs/contributors) [![Docker Pulls](https://img.shields.io/docker/pulls/hippo4j/hippo4j-server.svg?label=docker%20pulls&color=fac858)](https://store.docker.com/community/images/hippo4j/hippo4j-server) [![codecov](https://codecov.io/gh/opengoofy/hippo4j/branch/develop/graph/badge.svg?token=WBUVJN107I)](https://codecov.io/gh/opengoofy/hippo4j)
+通过对 JDK 线程池的增强，以及扩展三方框架底层线程池等功能，为业务系统提高线上运行保障能力。
+
+[![GitHub stars](https://img.shields.io/github/stars/opengoofy/hippo4j.svg?style=for-the-badge&label=Stars&logo=github)](https://github.com/opengoofy/hippo4j) [![Contributors](https://img.shields.io/github/contributors/opengoofy/hippo4j.svg?style=for-the-badge&label=Contributors&logo=appveyor)](https://github.com/opengoofy/hippo4j) 
+
+[![Gitee](https://gitee.com/magestack/hippo4j/badge/star.svg?theme=gvp)](https://gitee.com/magestack/hippo4j) [![Docker Pulls](https://img.shields.io/docker/pulls/hippo4j/hippo4j-server.svg?label=docker%20pulls&color=fac858)](https://store.docker.com/community/images/hippo4j/hippo4j-server) [![codecov](https://codecov.io/gh/opengoofy/hippo4j/branch/develop/graph/badge.svg?token=WBUVJN107I)](https://codecov.io/gh/opengoofy/hippo4j) [![EN doc](https://img.shields.io/badge/readme-English-orange.svg)](https://github.com/opengoofy/hippo4j/blob/develop/README-EN.md)
 
 -------
 
@@ -26,8 +29,6 @@
 
 ## 什么是 Hippo4j
 
-Hippo4j 通过对 JDK 线程池增强，以及扩展三方框架底层线程池等功能，为业务系统提高线上运行保障能力。
-
 提供以下功能支持：
 
 - 全局管控 - 管理应用线程池实例。
@@ -42,6 +43,7 @@ Hippo4j 通过对 JDK 线程池增强，以及扩展三方框架底层线程池�
 - 框架适配 - Dubbo、Hystrix、RabbitMQ、RocketMQ 等消费线程池运行时数据查看和线程数变更。
 - 变更审核 - 提供多种用户角色，普通用户变更线程池参数需要 Admin 用户审核方可生效。
 - 动态化插件 - 内置多种线程池插件，支持用户自定义插件以及运行时扩展。
+- 多版本适配 - 经过实际测试，已支持客户端 SpringBoot 1.5.x => 2.7.5 版本（更高版本未测试）。
 
 ## 快速开始
 
@@ -59,6 +61,18 @@ Hippo4j 通过对 JDK 线程池增强，以及扩展三方框架底层线程池�
 
 扫码添加微信，备注：hippo4j，邀您加入群聊。若图片加载不出来，访问 [官网站点](https://hippo4j.cn/docs/user_docs/other/group)。
 
+## 深入原理
+
+如果您公司没有使用 Hippo4j 场景的话，我也建议去阅读下项目的底层原理，主要有以下几个原因：
+
+- 为了提高代码质量以及后续的扩展行为，运用多种设计模式实现高内聚、低耦合。
+
+- 框架底层依赖 Spring 框架运行，并在源码中大量使用 Spring 相关功能。
+- 运用 JUC 并发包下多种工具保障多线程运行安全，通过实际场景理解并发编程。
+- 借鉴主流开源框架 Nacos、Eureka 实现轻量级配置中心和注册中心功能。
+- 自定义 RPC 框架实现，封装 Netty 完成客户端/服务端网络通信优化。
+- 通过 CheckStyle、Spotless 等插件规范代码编写，保障高质量代码行为和代码样式。
+
 ## 友情链接
 
 - [[ Sa-Token ]](https://github.com/dromara/sa-token)：一个轻量级 java 权限认证框架，让鉴权变得简单、优雅！  
@@ -66,6 +80,13 @@ Hippo4j 通过对 JDK 线程池增强，以及扩展三方框架底层线程池�
 - [[ HertzBeat ]](https://github.com/dromara/hertzbeat)：易用友好的云监控系统, 无需 Agent, 强大自定义监控能力。   
 - [[ JavaGuide ]](https://github.com/Snailclimb/JavaGuide)：一份涵盖大部分 Java 程序员所需要掌握的核心知识。
 - [[ toBeBetterJavaer ]](https://github.com/itwanger/toBeBetterJavaer)：一份通俗易懂、风趣幽默的 Java 学习指南。
+- [[ Jpom ]](https://gitee.com/dromara/Jpom)：简而轻的低侵入式在线构建、自动部署、日常运维、项目监控软件。
+
+## 刚果商城
+
+👉 [工作经验不满五年程序员，如何通过项目提高个人技术能力？](https://sourl.cn/VERS4y)
+
+<img width="1254" alt="image" src="https://user-images.githubusercontent.com/77398366/213593264-ebef9507-9e62-4257-900b-59856dd199f5.png">
 
 ## 贡献者
 
@@ -77,6 +98,6 @@ Hippo4j 通过对 JDK 线程池增强，以及扩展三方框架底层线程池�
 
 ## 鸣谢
 
-Hippo4j 社区已收到 Jetbrains 多份免费 Licenses，并已分配到项目 [活跃开发者](https://hippo4j.cn/team)，非常感谢 Jetbrains 对开源社区的支持。
+Hippo4j 社区收到 Jetbrains 多份 Licenses，并已分配项目 [活跃开发者](https://hippo4j.cn/team)，非常感谢 Jetbrains 对开源社区的支持。
 
 ![JetBrains Logo (Main) logo](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.svg)
