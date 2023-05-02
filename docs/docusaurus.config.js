@@ -89,7 +89,7 @@ const config = {
             navbar: {
                 title: '',
                 logo: {
-                    alt: 'HIPPO-4J 动态可观测线程池框架',
+                    alt: 'Hippo4j 动态可观测线程池框架',
                     src: 'img/hippo4j.png',
                 },
                 items: [
@@ -106,8 +106,9 @@ const config = {
                       position: "left",
                       activeBaseRegex: `/community/`,
                     },
-                    { to: "/team", label: "团队", position: "left" },
-                    { to: "/users", label: "用户", position: "left" },
+                    /*{ to: "/team", label: "团队", position: "left" },*/
+                    { to: "/users", label: "采用公司", position: "left" },
+                    { to: "/group", label: "加群沟通", position: "left" },
                     /*{to: '/blog', label: '博客', position: 'left'},*/
                     {
                         href: 'http://console.hippo4j.cn/index.html',
@@ -115,7 +116,7 @@ const config = {
                         position: 'left',
                     },
                     {
-                        href: 'https://sourl.cn/Fyp7y4',
+                        href: 'https://gitee.com/opengoofy/congomall',
                         label: '👉 刚果商城',
                         position: 'left',
                     },
@@ -124,8 +125,8 @@ const config = {
                         position: 'right',
                         dropdownActiveClassDisabled: true,
                     },
-                    {type: 'localeDropdown', position: 'right'},
 
+                    {type: 'localeDropdown', position: 'right'},
                     /*{
                         href: 'https://gitee.com/mabaiwancn/hippo4j',
                         label: 'Gitee',
@@ -170,7 +171,7 @@ const config = {
                         items: [
                             {
                                 label: 'Group',
-                                href: 'https://hippo4j.cn/docs/user_docs/other/group',
+                                href: 'https://hippo4j.cn/group',
                             },
                             {
                                 label: 'WeChat',
@@ -183,7 +184,7 @@ const config = {
                         items: [
                             {
                                 label: 'Gitee',
-                                href: 'https://gitee.com/magestack/hippo4j',
+                                href: 'https://gitee.com/opengoofy/hippo4j',
                             },
                             {
                                 label: 'GitHub',
@@ -205,7 +206,7 @@ const config = {
                         ],
                     },
                 ],
-                copyright: `Copyright © 2021-2022 小马哥版权所有 <a href="https://beian.miit.gov.cn">京ICP备2021038095号-2
+                copyright: `Copyright © 2021-2022 马丁版权所有 <a href="https://beian.miit.gov.cn">京ICP备2021038095号
 </a>`,
             },
             prism: {

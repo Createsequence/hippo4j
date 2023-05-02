@@ -19,8 +19,6 @@ package cn.hippo4j.common.constant;
 
 /**
  * Http method constants.
- *
- * @author Rongzhen Yan
  */
 public class HttpMethod {
 

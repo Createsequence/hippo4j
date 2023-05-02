@@ -20,9 +20,9 @@ sidebar_position: 1
 - 无法执行优雅关闭，当项目关闭时，大量正在运行的线程池任务被丢弃。
 - 线程池运行中，任务执行停止，怀疑发生死锁或执行耗时操作，但是无从下手。
 
-## 什么是 Hippo-4J
+## 什么是 Hippo4j
 
-Hippo-4J 通过对 JDK 线程池增强，以及扩展三方框架底层线程池等功能，为业务系统提高线上运行保障能力。
+Hippo4j 通过对 JDK 线程池增强，以及扩展三方框架底层线程池等功能，为业务系统提高线上运行保障能力。
 
 提供以下功能支持：
 
@@ -48,9 +48,13 @@ Hippo-4J 通过对 JDK 线程池增强，以及扩展三方框架底层线程池
 
 ## 联系我
 
-![](https://user-images.githubusercontent.com/77398366/185774220-c11951f9-e130-4d60-8204-afb5c51d4401.png)
+开源不易，右上角点个 Star 鼓励一下吧！
 
-扫码添加微信，备注：hippo4j，邀您加入群聊。若图片加载不出来，访问 [官网站点](https://hippo4j.cn/docs/user_docs/other/group)。
+如果大家想要实时关注 Hippo4j 更新的文章以及分享的干货的话，可以关注我的公众号。
+
+使用过程中有任何问题，或者对项目有什么建议，关注公众号回复：加群，和 1000+ 志同道合的朋友交流讨论。
+
+![](https://images-machen.oss-cn-beijing.aliyuncs.com/image-20230317191041262-mini.png)
 
 ## 友情链接
 - [[ LiteFlow ]](https://liteflow.yomahub.com/)：轻量，快速，稳定可编排的组件式规则引擎。

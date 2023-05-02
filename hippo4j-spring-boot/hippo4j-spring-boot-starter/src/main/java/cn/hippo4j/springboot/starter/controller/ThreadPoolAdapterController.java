@@ -21,7 +21,7 @@ import cn.hippo4j.adapter.base.ThreadPoolAdapter;
 import cn.hippo4j.adapter.base.ThreadPoolAdapterParameter;
 import cn.hippo4j.adapter.base.ThreadPoolAdapterState;
 import cn.hippo4j.common.api.ClientNetworkService;
-import cn.hippo4j.common.spi.DynamicThreadPoolServiceLoader;
+import cn.hippo4j.common.extension.support.ServiceLoaderRegistry;
 import cn.hippo4j.common.toolkit.StringUtil;
 import cn.hippo4j.common.web.base.Result;
 import cn.hippo4j.common.web.base.Results;
@@ -49,8 +49,7 @@ import static cn.hippo4j.adapter.base.ThreadPoolAdapterBeanContainer.THREAD_POOL
 public class ThreadPoolAdapterController {
 
     private final ConfigurableEnvironment environment;
-
-    private final InetUtils hippo4JInetUtils;
+    private final InetUtils hippo4jInetUtils;
 
     @GetMapping("/adapter/thread-pool/info")
     public Result<ThreadPoolAdapterState> getAdapterThreadPool(ThreadPoolAdapterParameter requestParameter) {
@@ -59,13 +58,13 @@ public class ThreadPoolAdapterController {
             ThreadPoolAdapterState threadPoolState = each.getThreadPoolState(requestParameter.getThreadPoolKey());
             String active = environment.getProperty("spring.profiles.active", "UNKNOWN");
             threadPoolState.setActive(active.toUpperCase());
-            String[] customerNetwork = DynamicThreadPoolServiceLoader.getSingletonServiceInstances(ClientNetworkService.class)
+            String[] customerNetwork = ServiceLoaderRegistry.getSingletonServiceInstances(ClientNetworkService.class)
                     .stream().findFirst().map(network -> network.getNetworkIpPort(environment)).orElse(null);
             String clientAddress;
             if (customerNetwork != null) {
                 clientAddress = StringUtil.newBuilder(customerNetwork[0], ":", customerNetwork[1]);
             } else {
-                clientAddress = CloudCommonIdUtil.getClientIpPort(environment, hippo4JInetUtils);
+                clientAddress = CloudCommonIdUtil.getClientIpPort(environment, hippo4jInetUtils);
             }
             threadPoolState.setClientAddress(clientAddress);
             threadPoolState.setIdentify(IdentifyUtil.getIdentify());

@@ -23,7 +23,7 @@ import cn.hippo4j.common.executor.support.RejectedPolicyTypeEnum;
 import cn.hippo4j.common.toolkit.ReflectUtil;
 import cn.hippo4j.common.toolkit.StringUtil;
 import cn.hippo4j.config.springboot.starter.config.BootstrapConfigProperties;
-import cn.hippo4j.config.springboot.starter.config.DynamicThreadPoolNotifyProperties;
+import cn.hippo4j.common.api.ExecutorNotifyProperties;
 import cn.hippo4j.config.springboot.starter.config.ExecutorProperties;
 import cn.hippo4j.core.executor.DynamicThreadPool;
 import cn.hippo4j.core.executor.DynamicThreadPoolExecutor;
@@ -31,6 +31,7 @@ import cn.hippo4j.core.executor.DynamicThreadPoolWrapper;
 import cn.hippo4j.core.executor.manage.GlobalThreadPoolManage;
 import cn.hippo4j.core.executor.support.adpter.DynamicThreadPoolAdapterChoose;
 import cn.hippo4j.core.toolkit.DynamicThreadPoolAnnotationUtil;
+import cn.hippo4j.common.toolkit.ThreadPoolExecutorUtil;
 import cn.hippo4j.message.service.GlobalNotifyAlarmManage;
 import cn.hippo4j.message.service.ThreadPoolNotifyAlarm;
 import lombok.AllArgsConstructor;
@@ -107,6 +108,7 @@ public final class DynamicThreadPoolPostProcessor implements BeanPostProcessor {
                     .findFirst()
                     .orElseThrow(() -> new RuntimeException("The thread pool id does not exist in the configuration."));
             try {
+                executorProperties = buildActualExecutorProperties(executorProperties);
                 threadPoolParamReplace(executor, executorProperties);
             } catch (Exception ex) {
                 log.error("Failed to initialize thread pool configuration.", ex);
@@ -121,7 +123,7 @@ public final class DynamicThreadPoolPostProcessor implements BeanPostProcessor {
                 threadPoolId,
                 executorProperties == null
                         ? buildDefaultExecutorProperties(threadPoolId, executor)
-                        : buildActualExecutorProperties(executorProperties));
+                        : executorProperties);
         return executor;
     }
 
@@ -170,8 +172,8 @@ public final class DynamicThreadPoolPostProcessor implements BeanPostProcessor {
     private void threadPoolParamReplace(ThreadPoolExecutor executor, ExecutorProperties executorProperties) {
         BlockingQueue workQueue = BlockingQueueTypeEnum.createBlockingQueue(executorProperties.getBlockingQueue(), executorProperties.getQueueCapacity());
         ReflectUtil.setFieldValue(executor, "workQueue", workQueue);
-        executor.setCorePoolSize(executorProperties.getCorePoolSize());
-        executor.setMaximumPoolSize(executorProperties.getMaximumPoolSize());
+        // fix https://github.com/opengoofy/hippo4j/issues/1063
+        ThreadPoolExecutorUtil.safeSetPoolSize(executor, executorProperties.getCorePoolSize(), executorProperties.getMaximumPoolSize());
         executor.setKeepAliveTime(executorProperties.getKeepAliveTime(), TimeUnit.SECONDS);
         executor.allowCoreThreadTimeOut(executorProperties.getAllowCoreThreadTimeOut());
         executor.setRejectedExecutionHandler(RejectedPolicyTypeEnum.createPolicy(executorProperties.getRejectedHandler()));
@@ -188,27 +190,36 @@ public final class DynamicThreadPoolPostProcessor implements BeanPostProcessor {
      * @return executor properties
      */
     private ExecutorProperties buildExecutorProperties(ExecutorProperties executorProperties) {
-        ExecutorProperties newExecutorProperties = ExecutorProperties.builder()
+        return ExecutorProperties.builder()
                 .corePoolSize(Optional.ofNullable(executorProperties.getCorePoolSize())
-                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(each -> each.getCorePoolSize()).get()))
+                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getCorePoolSize).get()))
                 .maximumPoolSize(Optional.ofNullable(executorProperties.getMaximumPoolSize())
-                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(each -> each.getMaximumPoolSize()).get()))
+                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getMaximumPoolSize).get()))
                 .allowCoreThreadTimeOut(Optional.ofNullable(executorProperties.getAllowCoreThreadTimeOut())
-                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(each -> each.getAllowCoreThreadTimeOut()).get()))
+                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getAllowCoreThreadTimeOut).get()))
                 .keepAliveTime(Optional.ofNullable(executorProperties.getKeepAliveTime())
-                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(each -> each.getKeepAliveTime()).get()))
+                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getKeepAliveTime).get()))
                 .blockingQueue(Optional.ofNullable(executorProperties.getBlockingQueue())
-                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(each -> each.getBlockingQueue()).get()))
+                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getBlockingQueue).get()))
                 .executeTimeOut(Optional.ofNullable(executorProperties.getExecuteTimeOut())
-                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(each -> each.getExecuteTimeOut()).orElse(0L)))
+                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getExecuteTimeOut).orElse(0L)))
                 .queueCapacity(Optional.ofNullable(executorProperties.getQueueCapacity())
-                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(each -> each.getQueueCapacity()).get()))
+                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getQueueCapacity).get()))
                 .rejectedHandler(Optional.ofNullable(executorProperties.getRejectedHandler())
-                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(each -> each.getRejectedHandler()).get()))
+                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getRejectedHandler).get()))
                 .threadNamePrefix(StringUtil.isBlank(executorProperties.getThreadNamePrefix()) ? executorProperties.getThreadPoolId() : executorProperties.getThreadNamePrefix())
                 .threadPoolId(executorProperties.getThreadPoolId())
+                .alarm(Optional.ofNullable(executorProperties.getAlarm())
+                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getAlarm).orElse(null)))
+                .activeAlarm(Optional.ofNullable(executorProperties.getActiveAlarm())
+                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getActiveAlarm).orElse(null)))
+                .capacityAlarm(Optional.ofNullable(executorProperties.getCapacityAlarm())
+                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getCapacityAlarm).orElse(null)))
+                .notify(Optional.ofNullable(executorProperties.getNotify())
+                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getNotify).orElse(null)))
+                .nodes(Optional.ofNullable(executorProperties.getNodes())
+                        .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getNodes).orElse(null)))
                 .build();
-        return newExecutorProperties;
     }
 
     /**
@@ -218,7 +229,7 @@ public final class DynamicThreadPoolPostProcessor implements BeanPostProcessor {
      * @return thread-pool notify alarm
      */
     private ThreadPoolNotifyAlarm buildThreadPoolNotifyAlarm(ExecutorProperties executorProperties) {
-        DynamicThreadPoolNotifyProperties notify = Optional.ofNullable(executorProperties).map(ExecutorProperties::getNotify).orElse(null);
+        ExecutorNotifyProperties notify = Optional.ofNullable(executorProperties).map(ExecutorProperties::getNotify).orElse(null);
         boolean isAlarm = Optional.ofNullable(executorProperties.getAlarm())
                 .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getAlarm).orElse(true));
         int activeAlarm = Optional.ofNullable(executorProperties.getActiveAlarm())
@@ -226,11 +237,11 @@ public final class DynamicThreadPoolPostProcessor implements BeanPostProcessor {
         int capacityAlarm = Optional.ofNullable(executorProperties.getCapacityAlarm())
                 .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getCapacityAlarm).orElse(80));
         int interval = Optional.ofNullable(notify)
-                .map(DynamicThreadPoolNotifyProperties::getInterval)
-                .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getNotify).map(DynamicThreadPoolNotifyProperties::getInterval).orElse(5));
+                .map(ExecutorNotifyProperties::getInterval)
+                .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getNotify).map(ExecutorNotifyProperties::getInterval).orElse(5));
         String receive = Optional.ofNullable(notify)
-                .map(DynamicThreadPoolNotifyProperties::getReceives)
-                .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getNotify).map(DynamicThreadPoolNotifyProperties::getReceives).orElse(""));
+                .map(ExecutorNotifyProperties::getReceives)
+                .orElseGet(() -> Optional.ofNullable(configProperties.getDefaultExecutor()).map(ExecutorProperties::getNotify).map(ExecutorNotifyProperties::getReceives).orElse(""));
         ThreadPoolNotifyAlarm threadPoolNotifyAlarm = new ThreadPoolNotifyAlarm(isAlarm, activeAlarm, capacityAlarm);
         threadPoolNotifyAlarm.setInterval(interval);
         threadPoolNotifyAlarm.setReceives(receive);

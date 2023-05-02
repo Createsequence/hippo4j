@@ -19,6 +19,7 @@ package cn.hippo4j.springboot.starter.config;
 
 import cn.hippo4j.common.model.InstanceInfo;
 import cn.hippo4j.core.toolkit.inet.InetUtils;
+import cn.hippo4j.springboot.starter.core.ClientShutdown;
 import cn.hippo4j.springboot.starter.core.DiscoveryClient;
 import cn.hippo4j.springboot.starter.provider.InstanceInfoProviderFactory;
 import cn.hippo4j.springboot.starter.remote.HttpAgent;
@@ -36,15 +37,22 @@ public class DiscoveryConfiguration {
 
     private final BootstrapProperties bootstrapProperties;
 
-    private final InetUtils hippo4JInetUtils;
+    private final InetUtils hippo4jInetUtils;
 
     @Bean
     public InstanceInfo instanceConfig() {
-        return InstanceInfoProviderFactory.getInstance(environment, bootstrapProperties, hippo4JInetUtils);
+        return InstanceInfoProviderFactory.getInstance(environment, bootstrapProperties, hippo4jInetUtils);
     }
 
     @Bean
-    public DiscoveryClient hippo4JDiscoveryClient(HttpAgent httpAgent, InstanceInfo instanceInfo) {
-        return new DiscoveryClient(httpAgent, instanceInfo);
+    public ClientShutdown hippo4jClientShutdown() {
+        return new ClientShutdown();
+    }
+
+    @Bean
+    public DiscoveryClient hippo4jDiscoveryClient(HttpAgent httpAgent,
+                                                  InstanceInfo instanceInfo,
+                                                  ClientShutdown hippo4jClientShutdown) {
+        return new DiscoveryClient(httpAgent, instanceInfo, hippo4jClientShutdown);
     }
 }

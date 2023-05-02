@@ -17,11 +17,11 @@
 
 package cn.hippo4j.adapter.web;
 
+import cn.hippo4j.common.enums.WebContainerEnum;
 import cn.hippo4j.common.model.ThreadPoolBaseInfo;
 import cn.hippo4j.common.model.ThreadPoolParameter;
 import cn.hippo4j.common.model.ThreadPoolParameterInfo;
 import cn.hippo4j.common.model.ThreadPoolRunStateInfo;
-import org.springframework.boot.web.server.WebServer;
 
 import java.util.concurrent.Executor;
 
@@ -36,6 +36,12 @@ public interface WebThreadPoolService {
      * @return Tomcat、Jetty、Undertow ThreadPoolExecutor
      */
     Executor getWebThreadPool();
+
+    /**
+     * Get web container port.
+     * @return
+     */
+    Integer getPort();
 
     /**
      * Simple info.
@@ -66,11 +72,9 @@ public interface WebThreadPoolService {
     void updateWebThreadPool(ThreadPoolParameterInfo threadPoolParameterInfo);
 
     /**
-     * Get web server.
+     * resolve current web container type.
      *
-     * @return
+     * <p>e.g: tomcat, jetty, undertow, etc.</p>
      */
-    default WebServer getWebServer() {
-        return null;
-    }
+    WebContainerEnum getWebContainerType();
 }

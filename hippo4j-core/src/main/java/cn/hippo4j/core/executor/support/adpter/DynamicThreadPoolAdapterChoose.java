@@ -17,9 +17,13 @@
 
 package cn.hippo4j.core.executor.support.adpter;
 
+import cn.hippo4j.common.extension.support.ServiceLoaderRegistry;
+import cn.hippo4j.common.toolkit.CollectionUtil;
 import cn.hippo4j.core.executor.DynamicThreadPoolExecutor;
+import cn.hippo4j.core.executor.support.spi.DynamicThreadPoolAdapterSPI;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -36,6 +40,7 @@ public class DynamicThreadPoolAdapterChoose {
         DYNAMIC_THREAD_POOL_ADAPTERS.add(new TransmittableThreadLocalExecutorServiceAdapter());
         DYNAMIC_THREAD_POOL_ADAPTERS.add(new ThreadPoolTaskExecutorAdapter());
         DYNAMIC_THREAD_POOL_ADAPTERS.add(new ZipkinExecutorAdapter());
+        loadCustomerAdapter();
     }
 
     /**
@@ -71,8 +76,23 @@ public class DynamicThreadPoolAdapterChoose {
      */
     public static void replace(Object executor, Executor dynamicThreadPoolExecutor) {
         Optional<DynamicThreadPoolAdapter> dynamicThreadPoolAdapterOptional = DYNAMIC_THREAD_POOL_ADAPTERS.stream().filter(each -> each.match(executor)).findFirst();
-        if (dynamicThreadPoolAdapterOptional.isPresent()) {
-            dynamicThreadPoolAdapterOptional.get().replace(executor, dynamicThreadPoolExecutor);
+        dynamicThreadPoolAdapterOptional.ifPresent(dynamicThreadPoolAdapter -> dynamicThreadPoolAdapter.replace(executor, dynamicThreadPoolExecutor));
+    }
+
+    /**
+     * Load SPI customer adapter.
+     */
+    private static void loadCustomerAdapter() {
+        ServiceLoaderRegistry.register(DynamicThreadPoolAdapterSPI.class);
+        Collection<DynamicThreadPoolAdapterSPI> instances = ServiceLoaderRegistry.getSingletonServiceInstances(DynamicThreadPoolAdapterSPI.class);
+        if (CollectionUtil.isEmpty(instances)) {
+            return;
+        }
+        for (DynamicThreadPoolAdapterSPI instance : instances) {
+            DynamicThreadPoolAdapter adapter = instance.adapter();
+            if (adapter != null) {
+                DYNAMIC_THREAD_POOL_ADAPTERS.add(adapter);
+            }
         }
     }
 }

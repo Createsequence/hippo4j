@@ -23,6 +23,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -51,30 +52,6 @@ public class BootstrapConfigProperties implements BootstrapPropertiesInterface {
      */
     private MonitorProperties monitor = new MonitorProperties();
 
-    /***
-     * Latest use {@link MonitorProperties#getEnable()}
-     */
-    @Deprecated
-    private Boolean collect = Boolean.TRUE;
-
-    /**
-     * Latest use {@link MonitorProperties#getCollectTypes()}
-     */
-    @Deprecated
-    private String collectType;
-
-    /**
-     * Latest use {@link MonitorProperties#getInitialDelay()}
-     */
-    @Deprecated
-    private Long initialDelay = 10000L;
-
-    /**
-     * Latest use {@link MonitorProperties#getCollectInterval()}
-     */
-    @Deprecated
-    private Long collectInterval = 5000L;
-
     /**
      * Config file type.
      */
@@ -101,25 +78,15 @@ public class BootstrapConfigProperties implements BootstrapPropertiesInterface {
     private Map<String, String> etcd;
 
     /**
-     * Tomcat thread pool config.
+     * web config
+     * @since 1.5.0
      */
-    private WebThreadPoolProperties tomcat;
-
-    /**
-     * Undertow thread pool config.
-     */
-    private WebThreadPoolProperties undertow;
-
-    /**
-     * Jetty thread pool config.
-     * KeepAliveTime is not supported temporarily.
-     */
-    private WebThreadPoolProperties jetty;
+    private WebExecutorProperties web;
 
     /**
      * Notify platforms.
      */
-    private List<NotifyPlatformProperties> notifyPlatforms;
+    private List<NotifyPlatformProperties> notifyPlatforms = Collections.emptyList();
 
     /**
      * Check thread pool running status interval.

@@ -22,7 +22,7 @@
         <developer>
             <name>chen.ma</name>
             <email>machen@apache.org</email>
-            <url>https://github.com/mageeric</url>
+            <url>https://github.com/magestacks</url>
         </developer>
         <developer>
             <name>shining-stars-lk</name>
@@ -41,10 +41,11 @@
         <module>hippo4j-rpc</module>
         <module>hippo4j-server</module>
         <module>hippo4j-spring-boot</module>
+        <module>hippo4j-agent</module>
     </modules>
 
     <properties>
-        <revision>1.5.0-SNAPSHOT</revision>
+        <revision>1.5.0</revision>
         <!-- Tool -->
         <dozer.version>6.5.0</dozer.version>
         <caffeine.version>2.9.3</caffeine.version>
@@ -52,6 +53,7 @@
         <jjwt.version>0.9.0</jjwt.version>
         <jackson-bom.version>2.11.1</jackson-bom.version>
         <h2.version>2.1.214</h2.version>
+        <mockito.version>3.12.4</mockito.version>
         <!-- Framework -->
         <dubbo.version>3.0.5</dubbo.version>
         <alibaba-dubbo.version>2.6.12</alibaba-dubbo.version>
@@ -125,6 +127,21 @@
                 <groupId>io.netty</groupId>
                 <artifactId>netty-all</artifactId>
                 <version>${netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-inline</artifactId>
+                <version>${mockito.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-junit-jupiter</artifactId>
+                <version>${mockito.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

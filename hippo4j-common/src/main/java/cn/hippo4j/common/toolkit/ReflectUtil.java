@@ -20,6 +20,7 @@ package cn.hippo4j.common.toolkit;
 import cn.hippo4j.common.web.exception.IllegalException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.springframework.cglib.core.ReflectUtils;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
@@ -147,8 +148,8 @@ public class ReflectUtil {
     }
 
     /**
-     * find the method associated with the method name<br>
-     * if find multiple, return the first, parameter is equivocal
+     * Find the method associated with the method name<br>
+     * if find multiple, return the first, parameter is equivocal.
      *
      * @param clazz      the class
      * @param methodName retrieves the method name
@@ -170,7 +171,7 @@ public class ReflectUtil {
     }
 
     /**
-     * find the method associated with the method name
+     * Find the method associated with the method name.
      *
      * @param clazz      the class
      * @param methodName retrieves the method name
@@ -190,7 +191,7 @@ public class ReflectUtil {
 
     /**
      * Cast the value to the type <br>
-     * If a ClassCastException occurs, return null
+     * If a ClassCastException occurs, return null.
      *
      * @param clazz Cast class
      * @param value The cast value
@@ -205,7 +206,7 @@ public class ReflectUtil {
     }
 
     /**
-     * the default value is obtained if it is a primitive type, and NULL if it is not
+     * The default value is obtained if it is a primitive type, and NULL if it is not.
      *
      * @param clazz clazz
      * @return default value
@@ -235,7 +236,29 @@ public class ReflectUtil {
     }
 
     /**
-     * invoke
+     * Invoke.
+     *
+     * @param obj        the obj
+     * @param methodName the method Name
+     * @param arguments  parameters
+     * @return result for zhe method
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T invoke(Object obj, String methodName, Object... arguments) {
+        try {
+            Method method = ReflectUtil.getMethodByName(obj.getClass(), methodName);
+            if (method == null) {
+                throw new IllegalException(methodName + "method not exists");
+            }
+            ReflectUtil.setAccessible(method);
+            return (T) method.invoke(obj, arguments);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new IllegalException(e);
+        }
+    }
+
+    /**
+     * Invoke.
      *
      * @param obj       the obj
      * @param method    the method
@@ -252,7 +275,7 @@ public class ReflectUtil {
     }
 
     /**
-     * get instance
+     * Get instance.
      *
      * @param cls the class
      * @return new Instance
@@ -266,7 +289,7 @@ public class ReflectUtil {
     }
 
     /**
-     * Find field by fieldName and fieldType
+     * Find field by fieldName and field-type.
      *
      * @param obj       target obj
      * @param filedName filedName
@@ -282,5 +305,20 @@ public class ReflectUtil {
             }
         }
         return null;
+    }
+
+    /**
+     *
+     * @param clazz
+     * @param methodName
+     * @param parameterTypes
+     * @return
+     */
+    public static Method findDeclaredMethod(Class clazz, String methodName, Class[] parameterTypes) {
+        try {
+            return ReflectUtils.findDeclaredMethod(clazz, methodName, parameterTypes);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

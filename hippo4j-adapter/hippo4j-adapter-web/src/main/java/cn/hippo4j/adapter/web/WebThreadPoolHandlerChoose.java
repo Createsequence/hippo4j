@@ -17,6 +17,7 @@
 
 package cn.hippo4j.adapter.web;
 
+import cn.hippo4j.adapter.web.WebThreadPoolService;
 import cn.hippo4j.common.config.ApplicationContextHolder;
 import cn.hippo4j.common.web.exception.ServiceException;
 import lombok.extern.slf4j.Slf4j;
