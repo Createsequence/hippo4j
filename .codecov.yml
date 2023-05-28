@@ -26,6 +26,10 @@ coverage:
       default:
         informational: true
 ignore:
-  - "hippo4j-example/.*"
+  - "examples/.*"
   - "docs/.*"
-  - "dev-support/.*"
+  - "tests/.*"
+  - "checkstyle/.*"
+  - "format/.*"
+  - "threadpool/console-new/.*"
+  - "threadpool/console/.*"
