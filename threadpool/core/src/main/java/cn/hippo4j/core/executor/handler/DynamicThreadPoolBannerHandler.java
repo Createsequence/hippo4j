@@ -20,6 +20,7 @@ package cn.hippo4j.core.executor.handler;
 import cn.hippo4j.common.toolkit.StringUtil;
 import cn.hippo4j.threadpool.dynamic.api.BootstrapPropertiesInterface;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.ansi.AnsiColor;
 import org.springframework.boot.ansi.AnsiOutput;
@@ -30,7 +31,7 @@ import org.springframework.boot.info.BuildProperties;
  * Dynamic thread-pool print banner.
  */
 @Slf4j
-public class DynamicThreadPoolBannerHandler implements InitializingBean {
+public class DynamicThreadPoolBannerHandler implements InitializingBean, DisposableBean {
 
     private final BootstrapPropertiesInterface properties;
 

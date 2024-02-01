@@ -8,6 +8,20 @@
     <packaging>pom</packaging>
     <name>${project.artifactId}</name>
     <url>https://github.com/opengoofy/hippo4j</url>
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+        </dependency>
+    </dependencies>
     <description>General solution for asynchronous scenarios</description>
 
     <licenses>

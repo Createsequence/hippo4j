@@ -17,14 +17,8 @@
 
 package cn.hippo4j.core.executor;
 
-import cn.hippo4j.common.toolkit.CollectionUtil;
-import cn.hippo4j.core.executor.plugin.impl.TaskDecoratorPlugin;
-import cn.hippo4j.core.executor.plugin.impl.TaskRejectCountRecordPlugin;
-import cn.hippo4j.core.executor.plugin.impl.TaskTimeoutNotifyAlarmPlugin;
-import cn.hippo4j.core.executor.plugin.impl.ThreadPoolExecutorShutdownPlugin;
 import cn.hippo4j.core.executor.plugin.manager.DefaultThreadPoolPluginManager;
-import cn.hippo4j.core.executor.plugin.manager.DefaultThreadPoolPluginRegistrar;
-import cn.hippo4j.threadpool.alarm.handler.DefaultThreadPoolCheckAlarmHandler;
+import cn.hippo4j.core.executor.plugin.manager.DynamicThreadPoolExecutorStandardPlugins;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -33,7 +27,6 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.task.TaskDecorator;
 
-import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
@@ -41,12 +34,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static cn.hippo4j.common.constant.Constants.NO_REJECT_COUNT_NUM;
-
 /**
  * Enhanced dynamic and monitored thread pool.
  *
- * @see DefaultThreadPoolCheckAlarmHandler#buildAlarmNotifyRequest
+ * @see DynamicThreadPoolExecutorStandardPlugins
  */
 @Slf4j
 public class DynamicThreadPoolExecutor extends ExtensibleThreadPoolExecutor implements DisposableBean {
@@ -65,14 +56,11 @@ public class DynamicThreadPoolExecutor extends ExtensibleThreadPoolExecutor impl
     private boolean waitForTasksToCompleteOnShutdown;
 
     /**
-     * The default await termination millis
+     * <p>The standard plugins of thread-pool.<br/>
+     * we trust that the standard plugins will not be modified after executor initialization,
+     * so we can configure the properties of the standard plugins through the apis of executor directly.
      */
-    private static final Long DEFAULT_AWAIT_TERMINATION_MILLIS = -1L;
-
-    /**
-     * The default execute timeout
-     */
-    private static final Long DEFAULT_EXECUTE_TIMEOUT = -1L;
+    private final DynamicThreadPoolExecutorStandardPlugins standardPlugins;
 
     /**
      * Creates a new {@code DynamicThreadPoolExecutor} with the given initial parameters.
@@ -116,10 +104,11 @@ public class DynamicThreadPoolExecutor extends ExtensibleThreadPoolExecutor impl
                 blockingQueue, threadFactory, rejectedExecutionHandler);
         log.info("Initializing ExecutorService '{}'", threadPoolId);
         this.waitForTasksToCompleteOnShutdown = waitForTasksToCompleteOnShutdown;
+        this.active = new AtomicBoolean(false);
         // Init default plugins.
-        new DefaultThreadPoolPluginRegistrar(executeTimeOut, awaitTerminationMillis)
-                .doRegister(this);
-        this.active = new AtomicBoolean(true);
+        this.standardPlugins = new DynamicThreadPoolExecutorStandardPlugins(executeTimeOut, awaitTerminationMillis);
+        standardPlugins.doRegister(this);
+        this.active.set(true);
     }
 
     /**
@@ -158,13 +147,9 @@ public class DynamicThreadPoolExecutor extends ExtensibleThreadPoolExecutor impl
      * Get await termination millis.
      *
      * @return await termination millis.
-     * @deprecated use {@link ThreadPoolExecutorShutdownPlugin}
      */
-    @Deprecated
     public long getAwaitTerminationMillis() {
-        return getPluginOfType(ThreadPoolExecutorShutdownPlugin.PLUGIN_NAME, ThreadPoolExecutorShutdownPlugin.class)
-                .map(ThreadPoolExecutorShutdownPlugin::getAwaitTerminationMillis)
-                .orElse(DEFAULT_AWAIT_TERMINATION_MILLIS);
+        return standardPlugins.getAwaitTerminationMillis();
     }
 
     /**
@@ -172,99 +157,70 @@ public class DynamicThreadPoolExecutor extends ExtensibleThreadPoolExecutor impl
      *
      * @param awaitTerminationMillis           await termination millis
      * @param waitForTasksToCompleteOnShutdown wait for tasks to complete on shutdown
-     * @deprecated use {@link ThreadPoolExecutorShutdownPlugin}
      */
-    @Deprecated
     public void setSupportParam(long awaitTerminationMillis, boolean waitForTasksToCompleteOnShutdown) {
         setWaitForTasksToCompleteOnShutdown(waitForTasksToCompleteOnShutdown);
-        getPluginOfType(ThreadPoolExecutorShutdownPlugin.PLUGIN_NAME, ThreadPoolExecutorShutdownPlugin.class)
-                .ifPresent(processor -> processor.setAwaitTerminationMillis(awaitTerminationMillis));
+        standardPlugins.setAwaitTerminationMillis(awaitTerminationMillis);
     }
 
     /**
      * Get reject count num.
      *
      * @return reject count num
-     * @see DefaultThreadPoolCheckAlarmHandler#buildAlarmNotifyRequest
-     * @deprecated use {@link TaskRejectCountRecordPlugin}
      */
-    @Deprecated
     public Long getRejectCountNum() {
-        return getPluginOfType(TaskRejectCountRecordPlugin.PLUGIN_NAME, TaskRejectCountRecordPlugin.class)
-                .map(TaskRejectCountRecordPlugin::getRejectCountNum)
-                .orElse(NO_REJECT_COUNT_NUM);
+        return standardPlugins.getRejectCountNum();
     }
 
     /**
      * Get reject count.
      *
      * @return reject count num
-     * @deprecated use {@link TaskRejectCountRecordPlugin}
      */
-    @Deprecated
     public AtomicLong getRejectCount() {
-        return getPluginOfType(TaskRejectCountRecordPlugin.PLUGIN_NAME, TaskRejectCountRecordPlugin.class)
-                .map(TaskRejectCountRecordPlugin::getRejectCount)
-                .orElse(new AtomicLong(0));
+        return standardPlugins.getRejectCount();
     }
 
     /**
      * Get execute time out.
      *
-     * @deprecated use {@link TaskTimeoutNotifyAlarmPlugin}
+     * @return execute time out
      */
-    @Deprecated
     public Long getExecuteTimeOut() {
-        return getPluginOfType(TaskTimeoutNotifyAlarmPlugin.PLUGIN_NAME, TaskTimeoutNotifyAlarmPlugin.class)
-                .map(TaskTimeoutNotifyAlarmPlugin::getExecuteTimeOut)
-                .orElse(DEFAULT_EXECUTE_TIMEOUT);
+        return standardPlugins.getExecuteTimeOut();
     }
 
     /**
      * Set execute time out.
      *
      * @param executeTimeOut execute time out
-     * @deprecated use {@link TaskTimeoutNotifyAlarmPlugin}
      */
-    @Deprecated
     public void setExecuteTimeOut(Long executeTimeOut) {
-        getPluginOfType(TaskTimeoutNotifyAlarmPlugin.PLUGIN_NAME, TaskTimeoutNotifyAlarmPlugin.class)
-                .ifPresent(processor -> processor.setExecuteTimeOut(executeTimeOut));
+        standardPlugins.setExecuteTimeOut(executeTimeOut);
     }
 
     /**
      * Get {@link TaskDecorator}.
      *
-     * @deprecated use {@link TaskDecoratorPlugin}
+     * @return task decorator
      */
-    @Deprecated
     public TaskDecorator getTaskDecorator() {
-        return getPluginOfType(TaskDecoratorPlugin.PLUGIN_NAME, TaskDecoratorPlugin.class)
-                .map(processor -> CollectionUtil.getFirst(processor.getDecorators()))
-                .orElse(null);
+        return standardPlugins.getTaskDecorator();
     }
 
     /**
      * Set {@link TaskDecorator}.
      *
      * @param taskDecorator task decorator
-     * @deprecated use {@link TaskDecoratorPlugin}
      */
-    @Deprecated
     public void setTaskDecorator(TaskDecorator taskDecorator) {
-        getPluginOfType(TaskDecoratorPlugin.PLUGIN_NAME, TaskDecoratorPlugin.class)
-                .ifPresent(processor -> {
-                    if (Objects.nonNull(taskDecorator)) {
-                        processor.clearDecorators();
-                        processor.addDecorator(taskDecorator);
-                    }
-                });
+        standardPlugins.setTaskDecorator(taskDecorator);
     }
 
     /**
      * Get rejected execution handler.
      *
-     * @deprecated use {@link DynamicThreadPoolExecutor#getRejectedExecutionHandler}
+     * @deprecated use {@link #getRejectedExecutionHandler}
      */
     @Deprecated
     public RejectedExecutionHandler getRedundancyHandler() {
@@ -275,7 +231,7 @@ public class DynamicThreadPoolExecutor extends ExtensibleThreadPoolExecutor impl
      * Set rejected execution handler.
      *
      * @param handler handler
-     * @deprecated use {@link DynamicThreadPoolExecutor#setRejectedExecutionHandler}
+     * @deprecated use {@link #setRejectedExecutionHandler}
      */
     @Deprecated
     public void setRedundancyHandler(RejectedExecutionHandler handler) {
